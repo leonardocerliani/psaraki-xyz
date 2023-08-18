@@ -1,0 +1,35 @@
+"1","The [34mbigrquery[39m package is requesting access to your Google account.
+"
+"1","Select a pre-authorised account or enter '0' to obtain a new token.
+"
+"1","Press Esc/Ctrl + C to cancel.
+"
+"1",""
+"1","
+"
+"1","1: lcerli@turingcollege.com"
+"1","
+"
+"1","2: leonardo.cerliani@gmail.com"
+"1","
+"
+"1",""
+"1","
+"
+"2","Complete
+"
+"2","Billed: 0 B
+"
+"2","Downloading first chunk of data.
+"
+"2","First chunk includes all requested rows.
+"
+"0","
+select
+ event_date,
+ count(*) as n_purchases,
+ from `turing_data_analytics.raw_events`
+ where event_name = ""purchase""
+ group by event_date
+ order by event_date
+"

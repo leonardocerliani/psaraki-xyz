@@ -1,0 +1,26 @@
+"0","library(bigrquery)"
+"2","Warning message:
+"
+"2","R graphics engine version 15 is not supported by this version of RStudio. The Plots tab will be disabled until a newer version of RStudio is installed. 
+"
+"0","library(tidyverse)"
+"1","── [1mAttaching packages[22m ──────────────────────────────────────────────────── tidyverse 1.3.2 ──
+"
+"1","[32m✔[39m [34mggplot2[39m 3.4.2     [32m✔[39m [34mpurrr  [39m 1.0.1
+[32m✔[39m [34mtibble [39m 3.2.1     [32m✔[39m [34mdplyr  [39m 1.1.2
+[32m✔[39m [34mtidyr  [39m 1.3.0     [32m✔[39m [34mstringr[39m 1.5.0
+[32m✔[39m [34mreadr  [39m 2.1.3     [32m✔[39m [34mforcats[39m 0.5.2
+"
+"1","── [1mConflicts[22m ─────────────────────────────────────────────────────── tidyverse_conflicts() ──
+[31m✖[39m [34mdplyr[39m::[32mfilter()[39m masks [34mstats[39m::filter()
+[31m✖[39m [34mdplyr[39m::[32mlag()[39m    masks [34mstats[39m::lag()
+"
+"0","library(DBI)"
+"0",""
+"0","con <- dbConnect("
+"0","  bigrquery::bigquery(),"
+"0","  project = ""tc-da-1"","
+"0","  dataset = ""turing_data_analytics.raw_events"","
+"0","  billing = ""tc-da-1"""
+"0",")"
+"0",""

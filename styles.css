@@ -1,0 +1,29 @@
+/* css styles */
+
+@import url('https://fonts.googleapis.com/css2?family=Arima:wght@100;200;300&family=Comfortaa:wght@300;400;500&family=Lora:ital,wght@0,400;0,600;1,400&family=Merriweather+Sans:ital,wght@0,300;0,600;1,300&family=Merriweather:ital,wght@0,300;0,700;1,300&family=Poiret+One&display=swap');
+
+
+/*
+body {
+ font-family: 'Merriweather', serif;
+}
+*/
+
+@media (min-width: 992px) {
+  main {
+    margin-top: 1em;
+    margin-bottom: 1em;
+    margin-left: 1.8em;
+    margin-right: 1.8em;
+  }  
+}
+
+a {
+    color: #4582ec;
+    text-decoration: none;
+}
+
+code {
+ color: #475845;
+}
+

@@ -1,0 +1,10 @@
+"0","ggbetweenstats(
+ data = ddf,
+ x = is_returning_customer,
+ y = log_total_due,
+ type = ""nonparametric""
+)
+"
+"2","Warning:"
+"2"," [38;5;232mRemoved 299 rows containing non-finite values (`stat_boxplot()`).[39m
+"

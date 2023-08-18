@@ -1,0 +1,27 @@
+project:
+  type: website
+
+website:
+  title: "LC"
+  site-url: https://psaraki.xyz/
+  navbar:
+    left:
+      - text: about
+        href: index.Rmd
+      - text: blog
+        href: blog.qmd
+      - text: showcase
+        href: showcase.qmd
+        
+format:
+  html:
+    theme: spacelab
+    code-fold: true
+    fontsize: 1.1em
+    page-layout: article
+    css: styles.css
+
+editor: source
+
+execute:
+  freeze: auto

@@ -1,0 +1,358 @@
+---
+title: "Product Analysis"
+author: "Leonardo Cerliani"
+date: "23/7/2023"
+output:
+  html_document:
+    self_contained: true
+    toc: true
+    toc_depth: 3
+    toc_float: false
+    code_folding: hide
+    theme: cerulean
+    css: styles.css
+---
+
+
+```{r message=F}
+library(bigrquery)
+library(tidyverse)
+library(highcharter)
+library(plotly)
+library(lubridate)
+library(echarts4r)
+library(broom)
+library(flextable)
+```
+
+
+
+# Purchase over time across all countries
+```{sql, class.source = 'fold-show', eval = F}
+
+select
+  format_date('%Y-%m-%d',parse_date('%Y%m%d', event_date)) as event_date,
+  country,
+  count(*) as n_purchases
+from `turing_data_analytics.raw_events`
+  where event_name = "purchase" 
+  -- and country <> "(not set)"
+group by event_date, country
+order by country, event_date
+;
+ 
+```
+
+
+```{r message=F, out.width='100%'}
+
+df <- read_csv("csvs/purchases_by_country_data.csv")
+
+df %>%
+ group_by(event_date) %>% 
+ summarise(n_purchases = sum(n_purchases)) %>% 
+ ggplot(aes(x = event_date, y = n_purchases)) + 
+ geom_line(color = "lightblue") +
+ # geom_vline(xintercept = seq(as.Date("2020-11-01"), as.Date("2021-02-01"), by = "1 month"),
+ #  color = "grey", linetype = "solid", size = 0.2) +
+ theme_minimal() +
+ labs(title = "Purchases Nov 2020 - Feb 2021") -> gg
+
+ggplotly(gg, width = NULL)
+
+```
+
+# Purchase per country {.tabset}
+
+
+## At the daily level
+
+The plot below shows the purchases per country.
+
+Select one or more countries by double-clicking on their name in the legend.
+
+The countries featuring by far the highest amount of purchases are (1) US, (2) India, (Canada).
+
+
+```{r message=F, out.width='100%'}
+
+options(warn = -1)
+
+df <- read_csv("csvs/purchases_by_country_data.csv")
+
+# # highcharter
+# df %>%
+#   mutate(event_date = as.Date(event_date, format = "%Y%m%d")) %>%
+#   hchart(
+#     type = "line",
+#     hcaes(x = event_date, y = n_purchases, group = country))
+
+
+# ggplot %>% ggplotly
+df %>%
+  ggplot(aes(x = event_date, y = n_purchases, color = country)) +
+  geom_line() +
+  theme_minimal() +
+  labs(
+     title = "Purchases by Country - Day level",
+     subtitle = "Double-click to select one or more countries"
+   )-> gg
+
+ggplotly(gg, width = NULL)
+
+```
+
+
+
+
+## At the week level
+
+The apparent decline hinted by the data at the daily level is confirmed by the same data at the week level (to remove hf fluctuations). Not surpronsingly, the "hottest" week is the one before Christmas
+
+Purchases appear to steadily decline after that across all countries. Since the main plot is dominated by US, India and Canada, the boxplot below pools together all the other countries. 
+
+```{r message=F, out.width='100%'}
+options(warn = -1)
+
+df <- read_csv("csvs/purchases_by_country_data.csv")
+
+ddf <- df %>%
+ mutate(event_date = as.Date(event_date, format = "%Y%m%d")) %>% 
+ mutate(week_number = week(event_date)) %>% 
+ mutate(week_start = floor_date(event_date, unit = "week")) %>% 
+ group_by(country, week_start) %>%
+ summarise(country = country, n_purchases = sum(n_purchases)) %>% 
+ arrange(country, week_start)
+
+
+ddf %>% 
+ # filter(grepl("^A",country)) %>% 
+ ggplot(aes(x=week_start, y=n_purchases, color=country)) +
+ geom_line() +
+ theme_minimal() +
+ labs(title = "Purchases at the week level") -> gg
+
+ggplotly(gg)
+
+
+ddf %>% 
+ filter(!country %in% c("United States", "Canada", "India")) %>% 
+ ggplot(aes(x = factor(week_start), y = log(n_purchases) )) +
+ geom_boxplot(color = "#1f78b4") +
+ labs(title = "Purchases across countries excluding US, Canada, India") +
+ theme_minimal() +  
+ theme(axis.text.x = element_text(angle = 45))
+
+
+```
+
+# Group purchases by device across countries
+```{sql, class.source = 'fold-show', eval = F}
+select
+  format_date('%Y-%m-%d', parse_date('%Y%m%d', event_date)) as event_date,
+  category as device,
+  count(*) as n_purchases,
+from `turing_data_analytics.raw_events`
+  where event_name = "purchase" 
+ group by event_date, category
+```
+
+Overall, purchases are mostly from desktop devices rather than from mobile devices, althogh the proportion does not deviate that much from 50%. 
+
+In some days, notably around the half and end of december and january, purchases from mobile increase. In absence of data from a larger range of dates, however, we cannot infer whether this event can be generalized
+
+```{r message=F, out.width='100%'}
+
+options(warn = -1)
+
+df <- read_csv("csvs/purchases_by_device_data.csv")
+
+df %>% 
+ ggplot(aes(x = event_date, y = n_purchases, color = device)) +
+ geom_line() +
+ theme_light() +
+ labs(title = "Purchases by device") -> gg
+
+ggplotly(gg)
+
+
+df %>% 
+ filter(!device == "tablet") %>% 
+ group_by(event_date) %>% 
+ mutate(prop = round(n_purchases/sum(n_purchases),2) ) %>% 
+ ggplot(
+  aes(x = event_date, y = prop, fill = device)
+ ) +
+ geom_bar(position = "stack", stat = "identity") +
+ geom_hline(yintercept = 0.5, color = "black", linetype = "dashed", size = 0.5) +
+ theme_classic() +
+ theme(legend.position = "bottom") -> gg
+
+ggplotly(gg)
+
+
+```
+
+
+# Check funnels for people using Chrome on Apple device
+```{sql, class.source = 'fold-show', eval = F}
+
+-- For each of the selected event, only the one with the smallest timestamp
+-- is counted, otherwise there would be too many same events for each user
+-- and the funnel would be biases towards events like 'view_item'
+
+with		
+-- for each event_name, take only the one with the smallest timestamp		
+unique_events as		
+(		
+  select		
+  event_name,		
+  browser_version,		
+  min(event_timestamp) as min_event_timestamp		
+  from `turing_data_analytics.raw_events`		
+  where mobile_brand_name = "Apple" and browser = "Chrome" and browser_version in ("86.0","87.0")
+    and event_name in (
+      "session_start", "view_item", "add_to_cart", "begin_checkout", 
+      "add_shipping_info", "add_payment_info", "purchase"
+    )	
+  group by user_pseudo_id, event_name, browser_version		
+  order by event_name		
+)		
+-- count the events for each name and country		
+select
+  browser_version,
+  event_name,		
+  count(event_name) as cnt,		
+from unique_events		
+group by browser_version, event_name		
+order by cnt desc		
+;
+
+```
+
+
+![](/Users/leonardo/My Drive/turing_college/Modules/Product_Analysis/imgs/funnels_chrome_v86-v87.png)
+<br>
+
+The difference in conversion from payment info to purchase is `r round(((1.76/1.62)-1)*100,2)`, which is not small. 
+
+However, a two-samples Z test for inequality of proportions shows that this difference is not significant.
+
+```{r message = F}
+
+df <- read_csv("csvs/chrome_v86_v87_funnel.csv") %>% 
+ filter(event_name %in% c("session_start", "purchase")) %>% 
+ arrange(desc(browser_version))
+
+df %>% flextable::flextable()
+
+n_v86 <- 16400
+n_v87 <- 27011
+n_purchase_v86 <- 288 
+n_purchase_v87 <- 438
+
+# two samples Z test for equality of proportions
+prop.test(n = c(n_v86,n_v87), x = c(n_purchase_v86,n_purchase_v87), alternative = "greater") %>%
+ glance %>%
+ rename(v86 = estimate1, v87 = estimate2) %>%
+ flextable() %>%
+ colformat_double(digits = 4)
+
+
+# # Create a 2x2 contingency table
+# contingency_table <- matrix(c(
+#  n_purchase_v86, n_v86 - n_purchase_v86, 
+#  n_purchase_v87, n_v87 - n_purchase_v87
+# ), nrow = 2)
+# 
+# # Perform the chi-square test
+# chisq.test(contingency_table) %>% glance %>% flextable()
+
+
+# library(pwr)
+# 
+# desired_power <- 0.8
+# alpha_level <- 0.01
+# 
+# # Perform power analysis to calculate the required sample size
+# pwr.2p.test(h = ES.h(p1 = 0.0176, p2 = 0.0162),
+#            sig.level = 0.01,
+#            power = 0.80,
+#            alternative = "greater")
+
+
+```
+
+
+At the same time one could argue that the important difference is in the conversion from the moment the customer starts the checkout. However, also in this case the difference is not significant.
+
+```{r message = F}
+
+df <- read_csv("csvs/chrome_v86_v87_funnel.csv") %>% 
+ filter(event_name %in% c("begin_checkout", "purchase"))
+
+n_v86 <- 612
+n_v87 <- 1003
+n_purchase_v86 <- 288 
+n_purchase_v87 <- 438
+
+
+# two samples Z test for equality of proportions
+prop.test(n = c(n_v86,n_v87), x = c(n_purchase_v86,n_purchase_v87), alternative = "greater") %>%
+ glance %>%
+ rename(v86 = estimate1, v87 = estimate2) %>%
+ flextable() %>%
+ colformat_double(digits = 4)
+
+# library(pwr)
+# 
+# desired_power <- 0.8
+# alpha_level <- 0.01
+# 
+# # Perform power analysis to calculate the required sample size
+# pwr.2p.test(h = ES.h(p1 = 0.4706, p2 = 0.4367),
+#            sig.level = 0.01,
+#            power = 0.80,
+#            alternative = "greater")
+
+
+```
+
+
+```{r}
+
+set.seed(124)
+
+# Define the non-uniform probabilities for each number (0, 1, 2, 3, 4, 5)
+probabilities <- c(0.4, 0.3, 0.2, 0.1, 0.05, 0.05)
+
+# Generate random data for blog post A with non-uniform distribution
+likes_A <- sample(0:5, 1000, replace = TRUE, prob = probabilities)
+
+# Generate random data for blog post B with non-uniform distribution
+# and let's increase the number of likes for people who give at least two likes
+# while keeping the same number of people with 0 or 1 likes
+likes_B <- sample(0:5, 1000, replace = TRUE, prob = probabilities)
+likes_B <- ifelse(likes_B <= 1, likes_B, likes_B + 1)
+
+
+# Create a 2x2 contingency table for the observed counts
+contingency_table <- matrix(c(table(likes_A), table(likes_B)), nrow = 2, byrow = T)
+
+# Add row and column names to the contingency table
+rownames(contingency_table) <- c("Likes_A", "Likes_B")
+colnames(contingency_table) <- c("0", "1", "2", "3", "4", "5")
+contingency_table
+
+# Perform the chi-square test for independence
+result <- chisq.test(contingency_table)
+
+# Print the test result
+print(result)
+
+t.test(likes_A, likes_B)
+
+
+```
+
+

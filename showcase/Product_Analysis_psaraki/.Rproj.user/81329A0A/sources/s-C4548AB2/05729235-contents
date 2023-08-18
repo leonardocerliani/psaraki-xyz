@@ -1,0 +1,783 @@
+---
+title: "Analysis of time-to-purchase (TTP)"
+subtitle: "Product Analysis Graded Task"
+author: "Leonardo Cerliani"
+date: "2/8/2023"
+output:
+  html_document:
+    self_contained: true
+    toc: true
+    toc_depth: 3
+    toc_float: false
+    code_folding: hide
+    theme: cerulean
+    css: styles.css
+---
+
+
+```{r message=F}
+library(bigrquery)
+library(tidyverse)
+library(highcharter)
+library(plotly)
+library(lubridate)
+library(echarts4r)
+library(broom)
+library(flextable)
+library(reactable)
+library(GGally)
+library(jtools)
+library(ggstatsplot)
+
+# avoid the conflict with MASS::select
+select <- dplyr::select
+
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Introduction
+We work in an e-commerce company and we have data about every action perfomed by the user on our website. Today we would like to examine how much time is spent from our buying users from the moment that they land on the website to the moment that they complete the purchase.
+
+Specifically, we would like to assess whether there are some differences based e.g. on the country where the user visits the website, the type of device (mobile or desktop), the period of the year, the amount of money spent, whether a certain campaign has an influence on this time, and so on.
+
+We will first restrict our data to days when a given user makes actually purchases something, and we will primarily focus on the features that can be found in the dataset when the `event_type` is indeed `purchase`
+
+
+# Data preparation
+
+## Load data and define factors
+In addition, we remove some noninformative details about the campaign.
+
+```{r message=F}
+df <- read_csv("Graded_Task_Data_V2.csv") %>% 
+ mutate_at(
+  c("user_pseudo_id","country","device","OS","browser"), 
+  factor
+ ) %>% 
+ filter(country != "(not set)") %>% 
+ mutate(campaign = ifelse(campaign %in% c("<Other>","(data deleted)"), NA, campaign) ) %>% 
+ mutate(campaign = factor(campaign)) %>% 
+ relocate(TTP)
+
+# summary(df)
+```
+
+
+## Explore overall TTP and datapoint per country {.tabset}
+
+We first notice that the Time-to-purchase (TTP) is very skewed towards short values, but has a very long right tail (high TTP). 
+
+The highest values are in part due to countries with very high median TTP values and very few datapoints - see the adjacent barplot and table. 
+
+We will therefore start by removing the countries with a median $TTP < 1.5*IQR(TTP)$ of the distribution of the median TTP, where IQR(TTP) is the interquartile range of the TTP distribution. About 1% of all the datapoints are removed.
+
+### TTP Distribution across countries
+Countries above $1.5 * IQR(medianTTP)$ will not be considered
+```{r}
+# Create a ggplot histogram
+ggplot(df, aes(x = TTP)) +
+  geom_histogram(binwidth = 1200, color = "black", fill = "lightblue") +
+  labs(title = "Distribution of TTP in seconds across all countries", 
+       x = "Time to Purchase (TTP)") +
+  # scale_x_continuous(labels = function(x) seconds_to_period(x)) +
+  theme_minimal() -> gg
+
+ggplotly(gg)
+
+```
+
+
+### Barplot median TTP
+```{r, out.height = "1000px"}
+
+
+df %>% 
+ select(country, TTP) %>% 
+ group_by(country) %>% 
+ summarise(
+  median_TTP = median(TTP),
+  percent_data = round(n()/nrow(df),4)*100
+ ) %>% 
+ arrange(median_TTP) %>%
+ mutate(name = fct_reorder(country, desc(median_TTP))) %>% 
+ ggplot(aes(x = median_TTP, y = name, 
+            text = paste0(country,"\n percent data: ",percent_data) )) +
+ theme_minimal() +
+ theme(panel.grid = element_blank()) +
+ geom_bar(stat = "identity", fill = "lightblue") +
+ labs(
+  title = "Median TTP per country",
+  subtitle = "Hover to inspect the % of datapoints in that country",
+  x = "median TTP", 
+  y = "Country"
+ ) -> gg
+
+ggplotly(gg)
+
+
+```
+
+
+### Table median TTP
+
+It is possible to display the values in ascending/descending by clicking on the column header. 
+
+```{r}
+df %>% 
+ select(country, TTP) %>% 
+ group_by(country) %>% 
+ summarise(
+  country = unique(country),
+  median_TTP = median(TTP),
+  `% data` = round(n()/nrow(df),4)*100 
+ ) %>% 
+ arrange(desc(`% data`)) %>% 
+ reactable(
+  searchable = T,
+  style = list(fontFamily = "Calibri")
+ )
+```
+
+
+### Remove countries with extreme medianTTP
+
+```{r}
+
+# Calculate the median TTP for each country
+medianTTP_tbl <- df %>% 
+ select(country,TTP) %>% 
+ group_by(country) %>% 
+ summarise(median_TTP = median(TTP)) %>% 
+ arrange(desc(median_TTP))
+
+ggplot(medianTTP_tbl %>% filter(median_TTP < 1e4), aes(y = median_TTP)) +
+  geom_boxplot() +
+  labs(title = "Boxplot of Median Time to Purchase",
+       y = "Median Time to Purchase (seconds)") +
+  theme_minimal() -> gg
+
+ggplotly(gg)
+
+
+# Remove countries with median TTP above 1.5 * IQR(medianTTP)
+thr_median_TTP <- medianTTP_tbl$median_TTP %>% median + 1.5 * IQR(medianTTP_tbl$median_TTP)
+
+df <- df %>% 
+ group_by(country) %>% 
+ mutate(medianTTP = median(TTP)) %>% 
+ relocate(medianTTP) %>% 
+ filter(medianTTP <= thr_median_TTP) %>% 
+ ungroup()
+
+```
+
+
+
+## Choice of the reference TTP {.tabset}
+
+Even in countries where the median TTP is within acceptable range, we still have very long sessions. Very long sessions do not necessarily signal "outliers", however before carrying out any analysis, we need to ask whether it makes sense to consider sessions of any length.
+
+Since eventually we are interested in assessing the effect of session length on revenues, we will operate a choice that takes into consideration both metrics - i.e. TTP and total_due.
+
+We observe that:
+
+1. While plotting the raw TTP apparently shows that order amount decreases with increasing TTP, plotting order amount vs. log(TTP) reveals that order amount increase - at least in some orders - for sessions up to 40-60 minutes.
+
+2. 80% of sessions last up to an hour, while 90% of sessions up to three hours
+
+**We will consider sessions up to an hour** - and later assess the impact of shorter or longer sessions
+
+
+### Session length decreases exponentially
+
+The TTP appear to follow a power-law: the length of the sessions decreases exponentially, as shown by the log-transformed TTP and by the red lines indicating the 80th, 90th and 95th quantiles of the distribution of TTP.
+
+In this plot, the order value appear to be decreasing with session time, however this is just due to the concentration of TTP in short sessions.
+
+
+```{r}
+
+par(mfrow = c(1,2))
+
+pdf_TTP <- hist(df$TTP, main = "Distribution of TTP", xlab = "TTP")
+pdf_logTTP <- hist(log(df$TTP), main = "Distribution of log(TTP)", xlab = "log(TTP)")
+
+par(mfrow = c(1,1))
+
+pTTP <- plot(df$TTP, df$total_due, pch = 21, bg = "lightblue",
+     xlab = "Time to Purchase (seconds)",
+     ylab = "Total Due in US$",
+     main = "TTP vs Total Due")
+
+
+q <- quantile(df$TTP, probs = c(0.80, 0.90, 0.95)) %>% round
+
+# construct a plot function for the quantiles lines
+plot_quantiles <- function(q,n) {
+ abline(v = q[[n]], col = "red", lwd = 2, lty = 2)
+ text(q[[n]] -2000, 1500, names(q[n]), col = "red")
+}
+
+# plot the quantile lines
+1:length(q) %>% walk(~ plot_quantiles(q,.x))
+
+
+```
+
+### Order value increases up to ~ 1 hour
+
+By log-transforming TTP we observe that the length of the session has at least some effect on the amount of the order, up to 40-60 minutes. We will choose 1 hour as our threshold for the maximum session length, which gives us about 80% of the whole data.
+
+Importantly we will carry out analyses on log-transformed data to decrease the deviation of the data from normality.
+
+```{r}
+
+breaks_log <- quantile(log(df$TTP), probs = seq(0.1,1,0.1))
+
+breaks_hms <- quantile(log(df$TTP), probs = seq(0.1,1,0.1)) %>%
+ exp() %>% 
+ round() %>% 
+ seconds_to_period %>% 
+ map_chr(~ sprintf("%02d:%02d:%02d",hour(.x),minute(.x),second(.x)))
+
+xlabels <- paste0(seq(10,100,10),"% - ", breaks_hms)
+
+# plot usd ~ logTTP
+df %>% 
+  ggplot(aes(x = log(TTP), y = total_due)) +
+  geom_point(fill = "lightblue", shape = 21, size = 2) +
+  geom_vline(xintercept = breaks_log, linetype = "solid", color = "red", linewidth = 0.3) +
+  geom_smooth(
+    method = "loess", formula = "y ~ x", color = "lightgreen", linetype = "solid", size = 1
+   ) +
+  theme_minimal() +
+  labs(title = "TTP vs Total Due",
+       x = "Time to Purchase (seconds)",
+       y = "Total Due in US$") +
+ scale_x_continuous(
+  breaks = breaks_log, 
+  labels = xlabels
+ ) +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+# # plot log(usd) ~ logTTP
+df %>% 
+ # filter(TTP <= 3600) %>%
+ filter(total_due >= 1) %>%
+ ggplot(aes(x = log(TTP), y = total_due)) +
+  geom_point(fill = "lightblue", shape = 21, size = 2) +
+  geom_vline(xintercept = breaks_log, linetype = "solid", color = "red", linewidth = 0.3) +
+  geom_smooth(
+   method = "loess", formula = "y ~ x", color = "lightgreen", linetype = "solid", linewidth = 1
+  ) +
+  theme_minimal() +
+  labs(title = "TTP vs Total Due",
+       x = "Time to Purchase (seconds)",
+       y = "Log(Total Due) in US$") +
+ scale_x_continuous(
+  breaks = breaks_log, 
+  labels = xlabels
+ ) +
+ scale_y_log10() +
+ # coord_cartesian(ylim = c(0, 750)) +  # Set the y-axis limits
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+```
+
+
+```{r include=F, eval=F}
+
+# cumulative distribution
+length(df$TTP[df$TTP < 10800]) / length(df$TTP)
+
+hist_data <- hist(df$TTP, breaks = seq(0, max(df$TTP) + 60, by = 60), plot = FALSE)
+cumulative_dist <- cumsum(hist_data$counts) / sum(hist_data$counts)
+
+# Calculate the value corresponding to the 90% cumulative distribution
+percentile_95_value <- hist_data$breaks[min(which(cumulative_dist >= 0.95))]
+
+
+# Create the cumulative distribution plot
+plot(hist_data$breaks[-1], cumulative_dist, type = "s", lwd = 2,
+     xlab = "Time to Purchase (seconds)", ylab = "Cumulative Distribution",
+     main = "Cumulative Distribution of Time to Purchase")
+
+# Add a vertical line at the 90% percentile value
+# abline(v = percentile_95_value, col = "red", lwd = 2, lty = 2)
+
+abline(v = percentile_95_value, col = "red", lwd = 2, lty = 2)
+
+quantile(df$TTP, probs = c(0.80, 0.90, 0.95))
+
+```
+
+
+### Test the increase up to ~ 1 hour
+```{r}
+# TTP between seconds_to_period(logTTP_range)
+logTTP_range <- 6:9
+
+# Limit to 500 to have a better view of the distribution. 
+# Stats with log are virtually identical 
+thr_total_due <- 500
+
+# function to use hms of logTTP as grouping variable for the plot
+logTTP_to_hms <- function(logTTP) {
+ hms <- round(logTTP) %>% exp() %>% round %>% seconds_to_period() %>% 
+  map_chr(~ sprintf("%02d:%02d:%02d",hour(.x),minute(.x),second(.x)))
+}
+
+
+ddf <- df %>% 
+ select(TTP, total_due) %>% 
+ mutate(logTTP = log(TTP)) %>% 
+ filter(logTTP >= min(logTTP_range) & logTTP <= max(logTTP_range)) %>% 
+ mutate(logTTP_hms = logTTP_to_hms(logTTP) ) %>% 
+ mutate(logUSD = log(total_due + 1)) %>% 
+ filter(total_due <= 500)
+
+ggbetweenstats(
+ data = ddf,
+ x = logTTP_hms,
+ y = total_due
+)
+
+```
+
+
+
+### Theshold TTP to 1 hour
+If we wish to modify the range of TTP we consider, please enter the value of TTP in seconds below.
+```{r message=F, class.source = 'fold-show'}
+
+# enter the desired value here to override the choice of 95% of TTP
+maximum_TTP <- 3600
+
+df_before_removing_extreme_TTP <- df
+
+# df <- df_before_removing_extreme_TTP
+
+df <- df %>% 
+ filter(TTP <= maximum_TTP) %>% 
+ mutate(logTTP = log(TTP)) %>% 
+ relocate(logTTP)
+
+```
+
+
+
+# Analysis
+
+```{r include=F}
+
+# In the following plots, the y axis is usually logTTP. To generate the labels in hms
+# use the following: 
+#  
+# function to use hms of logTTP as grouping variable for the plot. Insert:
+#
+#           mutate(logTTP_hms = logTTP_to_hms(logTTP) )
+#
+# in the following ddf selection.
+
+# The add the following line to the ggbetweenstats plot
+#
+# ggbetweenstats(
+#    data = ddf,
+#    x = [categorical variable],
+#    y = logTTP,
+#    ylab = "TTP hms"
+# ) + scale_y_continuous(breaks = c(5,6,7,8), labels = logTTP_to_hms(5:8))
+
+logTTP_to_hms <- function(logTTP) {
+ hms <- round(logTTP) %>% exp() %>% round %>% seconds_to_period() %>% 
+  map_chr(~ sprintf("%02d:%02d:%02d",hour(.x),minute(.x),second(.x)))
+ return(hms)
+}
+
+```
+
+
+
+## Relationship with # of other events
+
+**There appear to be an association between TTP and some events**, namely # of scrolls, page views, item views and user engagement. This is not surprising. **However, the association does not look linear: users with short sessions record few events, while users with long sessions can record either few or many events**. Overall this is not an interesting finding.
+
+A better analysis of these associations should consider not only the number but also the _duration_ of the events. This will be explored in the future.
+
+```{r ggpairs, message=F}
+
+df %>%
+ select(TTP, total_due, n_scrolls, n_page_view, n_user_engagement, n_view_item) %>% 
+ GGally::ggpairs()
+ 
+```
+
+
+```{r exploratory_lm, include=F}
+
+# A quick linear model shows thtat both TTP and total_due are related to n_view_item,
+# however several assumptions of the linear model are violated. Again this should
+# be better tested with the duration rather than the number of events, therefore this
+# exploration is not shown.
+
+# TTP ~ n_events
+fit <- lm(log(TTP) ~ n_scrolls + 
+           n_user_engagement + 
+           n_view_item + 
+           n_add_payment_info +
+           n_begin_checkout +
+           n_view_promotion +
+           n_page_view +
+           n_view_item, data = df)
+
+summary(fit)
+step(fit)
+
+fit_by_step <- lm(formula = log(TTP) ~ n_scrolls + n_user_engagement + n_view_item + 
+                            n_begin_checkout + n_view_promotion, data = df)
+
+summary(fit_by_step)
+plot(fit_by_step)
+
+# total_due ~ n_events
+fit <- lm(total_due ~ n_scrolls + 
+           n_user_engagement + 
+           n_view_item + 
+           n_add_payment_info +
+           n_begin_checkout +
+           n_view_promotion +
+           n_page_view +
+           n_view_item, data = df)
+
+summary(fit)
+step(fit)
+
+fit_by_step <- lm(formula = total_due ~ n_view_item + 
+                            n_scrolls + n_user_engagement + n_add_payment_info, data = df)
+
+summary(fit_by_step)
+
+
+# total_due ~ n_view_item
+fit <- lm(log(TTP) ~ n_view_item, data = df)
+summary(fit)
+
+plot(fit)
+
+plot(TTP ~ n_view_item, data = df)
+plot(log(TTP) ~ log(n_view_item), data = df)
+
+
+```
+
+
+## User who buy ON SALE products have longer sessions
+
+About 1 in 8 users buys goods which are on sale. We hypothesized that people buying items on sale would have quicker sessions, speculating that the sale might not last long or other people might take advantage of that.
+
+Instead, exactly the opposite happens: people who buy items on sale have overall longer sessions that people choosing items from categories with regular prices.
+
+NB: The 'Sale' information is taken from the items added to the cart, not just from the page viewed. 
+
+```{r TTP_items_on_sale, message=F}
+
+ddf <- df %>% 
+ select(TTP, is_on_sale) %>%
+ mutate(logTTP = log(TTP)) %>% 
+ mutate(is_on_sale = ifelse(is_on_sale == 0, "regular_price","on_sale")) %>% 
+ mutate(is_on_sale = factor(is_on_sale)) 
+
+ggbetweenstats(
+   data = ddf,
+   x = is_on_sale,
+   y = TTP,
+   type = "nonparametric"
+)
+
+```
+
+## Returning customers are faster to purchase {.tabset}
+
+### Returning customers TTP
+```{r}
+
+ddf <- df %>% 
+ select(TTP, logTTP, user_pseudo_id, event_date, total_due) %>%
+ mutate(log_total_due = log(total_due)) %>% 
+ group_by(user_pseudo_id) %>% 
+ mutate(is_returning_customer = ifelse( event_date == min(event_date), 0, 1 )) %>% 
+ ungroup()
+
+ggbetweenstats(
+ data = ddf,
+ x = is_returning_customer,
+ y = TTP,
+ type = "nonparametric"
+)
+
+
+```
+
+### Returning customer USD
+```{r}
+
+ggbetweenstats(
+ data = ddf,
+ x = is_returning_customer,
+ y = log_total_due,
+ type = "nonparametric"
+)
+
+```
+
+
+
+
+
+
+
+
+## Mobile/Destop and browser type have no effect on TTP {.tabset}
+
+### No effect of mobile/desktop device
+```{r mobile_desktop, message=F}
+
+ddf <- df %>%
+ ungroup() %>% 
+ filter(country == "United States") %>% 
+ select(TTP, device) %>% 
+ mutate(logTTP = log(TTP)) %>% 
+ filter(device != "tablet")
+
+
+ggbetweenstats(
+ data = ddf,
+ x = device,
+ y = TTP,
+ type = "nonparametric"
+)
+
+```
+
+
+### No effect of browser type
+```{r browser_type, message=F}
+
+ddf <- df %>%
+ ungroup() %>% 
+ filter(country == "United States") %>%
+ select(TTP, browser) %>% 
+ mutate(logTTP = log(TTP)) %>% 
+ filter(browser %in% c("Chrome","Safari"))
+
+
+ggbetweenstats(
+ data = ddf,
+ x = browser,
+ y = TTP,
+ type = "nonparametric"
+)
+
+```
+
+
+## Effect of campaign
+```{r}
+
+ddf <- df %>%
+ ungroup() %>% 
+ select(TTP,campaign) %>%
+ mutate(logTTP = log(TTP)) %>% 
+ mutate(campaign = as.character(campaign)) %>% 
+ mutate(campaign = ifelse(is.na(campaign),"(none)",campaign)) %>% 
+ filter(campaign %in% c("(none)","(referral)"))
+ # group_by(campaign) %>% 
+ # count()
+
+ggbetweenstats(
+ data = ddf,
+ x = campaign,
+ y = TTP,
+ type = "nonparametric"
+)
+
+df$campaign %>% unique
+ 
+```
+
+
+## boh
+```{r}
+
+df %>% colnames()
+
+```
+
+
+## Moment of the day (morning, afternoon, evening, night)
+
+
+
+## Seasonality
+
+```{r}
+df %>% 
+ ungroup() %>% 
+ select(TTP, event_date)
+
+df %>% 
+ ungroup() %>%
+ group_by(event_date) %>% 
+ select(TTP, event_date) %>% 
+ ggplot(aes(x = event_date, y = TTP)) +
+  geom_bar(stat = "identity", color = "green") +
+  labs(title = "Bar Plot of TTP vs Event Date",
+       x = "Event Date",
+       y = "Time to Purchase (seconds)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+df %>%
+ ungroup() %>% 
+ select(TTP,event_date) %>% 
+ mutate(mon = week(event_date)) %>%
+ ggplot(aes(x = mon, y = TTP)) +
+ geom_bar(stat="identity")
+
+
+df %>%
+ ungroup() %>% 
+ select(TTP,event_date) %>%
+ group_by(event_date) %>% 
+ reframe(
+  event_date = unique(event_date),
+  median_TTP = median(TTP),
+  mad_TTP = mad(TTP)
+ ) %>% 
+ ggplot(aes(x = event_date, y = median_TTP)) +
+ geom_bar(stat = "identity", fill="lightblue") +
+ theme_minimal() -> gg
+
+ggplotly(gg)
+
+
+df %>%
+ ungroup() %>% 
+ select(TTP,event_date) %>%
+ group_by(event_date) %>% 
+ ggplot(aes(x = factor(event_date), y = TTP)) +
+ geom_boxplot(fill = "lightblue") +
+ theme_minimal() +
+ theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+
+df %>%
+ ungroup() %>% 
+ select(TTP,event_date) %>%
+ mutate(logTTP = log(TTP)) %>% 
+ group_by(event_date) %>% 
+ reframe(
+  event_date = unique(event_date),
+  median_TTP = median(TTP),
+  mad_TTP = mad(TTP)
+ ) %>% 
+ ggplot(aes(x = event_date, y = median_TTP)) +
+ geom_bar(stat = "identity", fill="lightblue") +
+ # geom_errorbar(aes(ymin = median_TTP - mad_TTP, ymax = median_TTP + mad_TTP),
+ #                width = 0.1, color = "red",
+ #                position = position_dodge(width = 0.9)
+ #               ) +
+ theme_minimal() -> gg
+
+ggplotly(gg)
+
+```
+
+## By campaign
+
+
+
+# All the rest
+
+
+```{r, include=F}
+
+selected_country <- c("India")
+c(summary) %>% purrr::map(~ df$TTP[df$country == selected_country] %>% .x)
+c(hist,boxplot,summary) %>% walk(~ df$TTP[df$country == selected_country] %>% log %>% .x)
+
+
+df %>% 
+ select(country,TTP) %>% 
+ group_by(country) %>% 
+ summarise(median_TTP = median(TTP)) %>% 
+ arrange(desc(median_TTP)) %>%
+ ungroup %>% 
+ summarise(median = median(median_TTP) %>% seconds_to_period())
+
+df$TTP %>% median
+
+df %>%
+ group_by(country) %>% 
+ mutate(n = n()/nrow(df)) %>% 
+ filter(n > 0.1)
+
+
+exp(10) %>% seconds_to_period()
+
+
+
+ 
+df %>% 
+ select(country, TTP) %>% 
+ group_by(country) %>% 
+ summarise(
+  country = unique(country),
+  median_TTP = median(TTP),
+  `% data` = round(n()/nrow(df),4)*100 
+ ) %>% 
+ arrange(desc(`% data`)) %>% 
+ reactable(
+  searchable = T,
+  style = list(fontFamily = "Calibri")
+ )
+
+
+```
+
+
+
+```{r include=F}
+# df %>% 
+#  group_by(country,device) %>% 
+#  summarise(
+#   total_spend = sum(usd)
+#  ) %>% 
+#  pivot_wider(names_from = device, values_from = total_spend) %>% 
+#  arrange(mobile %>% desc)
+
+
+df %>%
+ mutate(campaign = as.character(campaign)) %>% 
+ mutate(campaign = ifelse(is.na(campaign),"(none)",campaign)) %>% 
+ filter(campaign  %in% c("(referral)","(direct)","(none)","(organic)")) %>% 
+ filter(device != "tablet") %>% 
+ mutate(campaign = factor(campaign)) %>% 
+ group_by(device, campaign) %>% 
+ summarise(
+  TTP = median(TTP)
+ ) %>% 
+ pivot_wider(names_from = device, values_from = TTP) %>% 
+ arrange(mobile)
+
+
+```
+

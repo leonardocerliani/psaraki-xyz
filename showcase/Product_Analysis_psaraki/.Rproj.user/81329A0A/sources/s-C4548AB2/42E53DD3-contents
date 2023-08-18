@@ -1,0 +1,58 @@
+# Data frame with the different cohorts that we have created
+cohort_model <- data.frame(
+ cohort_number = factor(c(rep(1, each = 1000), rep(2, each = 2000),
+                          rep(3, each = 4000))),
+ cohort_data = c(cohort1 <- rexp(1000, 1),
+                 cohort2 <- rexp(2000, 1.5),
+                 cohort3 <- rexp(4000, 3))
+)
+
+# Density plot by cohort
+ggplot(cohort_model, aes(x=cohort_data, color=cohort_number)) +
+ # Density Plot
+ geom_density() +
+ # Grayscale
+ scale_color_grey() +
+ theme_classic() +
+ # Titling
+ labs(title = "Cohort Days in Product", x = "Product in Days", y = "Density",
+      color = "Cohort", linetype = "Cohort") +
+ # Title Formatting
+ theme(plot.title = element_text(hjust = 0.5))
+
+# Average and median months in product over the full population
+mean(cohort_model$cohort_data)
+## [1] 0.5220862
+median(cohort_model$cohort_data)
+## [1] 0.3204659
+
+
+# Average months in product by cohort
+means_cohort <- tapply(cohort_model$cohort_data, cohort_model$cohort_number, mean)
+medians_cohort <- tapply(cohort_model$cohort_data, cohort_model$cohort_number, median)
+
+# Average months in product by cohort
+mat_cohort <- matrix(c(means_cohort, medians_cohort), 3, 2)
+rownames(mat_cohort)<-c("cohort1", "cohort2", "cohort3")
+colnames(mat_cohort)<- c("mean", "median")
+mat_cohort
+## mean    median
+## cohort1 0.9714811 0.6734068
+## cohort2 0.6660809 0.4735058
+## cohort3 0.3377401 0.2317998
+
+
+# Adjusting for the users in each cohort
+total_length <- length(cohort_model$cohort_data)
+size_cohort <- c(table(cohort_model$cohort_number))
+
+# Multiplying the cohort numbers by the number of users
+colSums(mat_cohort*(size_cohort/total_length))
+## mean      median
+## 0.5220862 0.3639454
+# Note: This is the same result as above
+
+# We could equally weight each cohort
+colSums(mat_cohort*(1/3))
+mean      median
+## 0.6584341 0.4595708

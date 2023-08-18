@@ -1,0 +1,18 @@
+
+n_click_A <- 268
+n_click_B <- 319
+
+n_see_A <- 12221
+n_see_B <- 12238
+
+
+prop.test(c(n_click_A, n_click_B), c(n_see_A, n_see_B))
+
+# Create a 2x2 contingency table
+contingency_table <- matrix(c(n_click_A, n_click_B, n_see_A, n_see_B), nrow = 2)
+
+# Perform the chi-square test
+result <- chisq.test(contingency_table)
+
+# Print the test result
+print(result)

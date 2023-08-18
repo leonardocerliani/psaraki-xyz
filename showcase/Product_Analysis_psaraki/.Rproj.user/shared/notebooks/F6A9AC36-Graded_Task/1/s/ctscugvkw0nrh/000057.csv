@@ -1,0 +1,7 @@
+"0",""
+"0","# par(mfrow = c(1,1))"
+"0",""
+"0","pTTP <- plot(df$TTP, df$total_due, pch = 21, bg = ""lightblue"","
+"0","     xlab = ""Time to Purchase (seconds)"","
+"0","     ylab = ""Total Due in US$"","
+"0","     main = ""TTP vs Total Due"")"

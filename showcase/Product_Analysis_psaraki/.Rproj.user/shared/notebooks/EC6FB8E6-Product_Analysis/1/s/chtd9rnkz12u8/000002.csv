@@ -1,0 +1,25 @@
+"0",""
+"0","df <- read_csv(""csvs/purchases_by_country_data.csv"")"
+"1","[1mRows: [22m[34m1637[39m [1mColumns: [22m[34m3[39m
+"
+"1","[36m──[39m [1mColumn specification[22m [36m────────────────────────────────────────────────────────────────────[39m
+[1mDelimiter:[22m "",""
+[31mchr[39m  (1): country
+[32mdbl[39m  (1): n_purchases
+[34mdate[39m (1): event_date
+"
+"1","
+[36mℹ[39m Use `spec()` to retrieve the full column specification for this data.
+[36mℹ[39m Specify the column types or set `show_col_types = FALSE` to quiet this message.
+"
+"0","df %>%"
+"0"," group_by(event_date) %>% "
+"0"," summarise(n_purchases = sum(n_purchases)) %>% "
+"0"," ggplot(aes(x = event_date, y = n_purchases)) + "
+"0"," geom_line(color = ""lightblue"") +"
+"0"," # geom_vline(xintercept = seq(as.Date(""2020-11-01""), as.Date(""2021-02-01""), by = ""1 month""),"
+"0"," #  color = ""grey"", linetype = ""solid"", size = 0.2) +"
+"0"," theme_minimal() +"
+"0"," labs(title = ""Purchases Nov 2020 - Feb 2021"") -> gg"
+"0",""
+"0","ggplotly(gg, width = NULL)"

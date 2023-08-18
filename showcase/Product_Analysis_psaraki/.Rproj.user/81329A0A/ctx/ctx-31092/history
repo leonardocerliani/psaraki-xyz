@@ -1,0 +1,512 @@
+ggbetweenstats(
+data = ddf,
+x = is_on_sale,
+y = logTTP,
+ylab = "TTP hms"
+)
+t.test(ddf$logTTP[ddf$is_on_sale == 1])
+ddf$logTTP[ddf$is_on_sale == 1]
+ddf
+ddf$is_on_sale %>% unique
+t.test(ddf$logTTP[ddf$is_on_sale == "on_sale"])
+ddf$logTTP[ddf$is_on_sale == "on_sale"]
+t.test(ddf$logTTP[ddf$is_on_sale == "on_sale"],ddf$logTTP[ddf$is_on_sale == "regular_price"])
+ggbetweenstats(
+data = ddf,
+x = is_on_sale,
+y = logTTP,
+ylab = "TTP hms"
+)
+t.test(ddf$logTTP[ddf$is_on_sale == "on_sale"],ddf$logTTP[ddf$is_on_sale == "regular_price"])
+ggbetweenstats(
+data = ddf,
+x = is_on_sale,
+y = logTTP,
+ylab = "TTP hms"
+) + scale_y_continuous(breaks = c(5,6,7,8), labels = logTTP_to_hms(5:8))
+ddf <- df %>%
+select(TTP, is_on_sale) %>%
+mutate(logTTP = log(TTP)) %>%
+mutate(is_on_sale = ifelse(is_on_sale == 0, "regular_price","on_sale")) %>%
+mutate(is_on_sale = factor(is_on_sale)) %>%
+mutate(logTTP_hms = logTTP_to_hms(logTTP) )
+ggbetweenstats(
+data = ddf,
+x = is_on_sale,
+y = logTTP,
+ylab = "TTP hms"
+) + scale_y_continuous(breaks = c(5,6,7,8), labels = logTTP_to_hms(5:8))
+df %>% colnames()
+df
+df %>%
+select(TTP, total_due, n_scrolls, n_page_view, n_user_engagement, n_view_item) %>%
+GGally::ggpairs()
+df <- df %>%
+filter(TTP <= maximum_TTP) %>%
+mutate(logTTP = log(TTP))
+df
+df <- df %>%
+filter(TTP <= maximum_TTP) %>%
+mutate(logTTP = log(TTP)) %>%
+relocate(logTTP)
+df
+# In the following plots, the y axis is usually logTTP. To generate the labels in hms
+# use the following:
+#
+# function to use hms of logTTP as grouping variable for the plot. Insert:
+#
+#           mutate(logTTP_hms = logTTP_to_hms(logTTP) )
+#
+# in the following ddf selection.
+# The add the following line to the ggbetweenstats plot
+#
+# ggbetweenstats(
+#    data = ddf,
+#    x = [categorical variable],
+#    y = logTTP,
+#    ylab = "TTP hms"
+# ) + scale_y_continuous(breaks = c(5,6,7,8), labels = logTTP_to_hms(5:8))
+logTTP_to_hms <- function(logTTP) {
+hms <- round(logTTP) %>% exp() %>% round %>% seconds_to_period() %>%
+map_chr(~ sprintf("%02d:%02d:%02d",hour(.x),minute(.x),second(.x)))
+return(hms)
+}
+df %>%
+select(TTP, total_due, n_scrolls, n_page_view, n_user_engagement, n_view_item) %>%
+GGally::ggpairs()
+df %>%
+select(logTTP, total_due, n_scrolls, n_page_view, n_user_engagement, n_view_item) %>%
+GGally::ggpairs()
+df %>%
+select(TTP, total_due, n_scrolls, n_page_view, n_user_engagement, n_view_item) %>%
+GGally::ggpairs()
+ddf <- df %>%
+ungroup() %>%
+filter(country == "United States") %>%
+select(TTP, device) %>%
+filter(device != "tablet")
+ggbetweenstats(
+data = ddf,
+x = device,
+y = logTTP
+)
+df
+ddf <- df %>%
+ungroup() %>%
+filter(country == "United States") %>%
+select(TTP, device) %>%
+mutate(logTTP = log(TTP)) %>%
+filter(device != "tablet")
+ggbetweenstats(
+data = ddf,
+x = device,
+y = logTTP
+)
+exp(5:8)
+exp(5:8) %>% round()
+exp(5:8) %>% round() %>% seconds_to_period()
+ddf <- df %>%
+ungroup() %>%
+filter(country == "United States") %>%
+select(TTP, device) %>%
+mutate(logTTP = log(TTP)) %>%
+filter(device != "tablet")
+ggbetweenstats(
+data = ddf,
+x = device,
+y = logTTP
+)
+ddf <- df %>%
+ungroup() %>%
+filter(country == "United States") %>%
+select(TTP, device) %>%
+mutate(logTTP = log(TTP)) %>%
+filter(device != "tablet") %>%
+mutate(logTTP_hms = logTTP_to_hms(logTTP) )
+ggbetweenstats(
+data = ddf,
+x = device,
+y = logTTP
+) + scale_y_continuous(breaks = c(5,6,7,8), labels = logTTP_to_hms(5:8))
+ddf <- df %>%
+ungroup() %>%
+filter(country == "United States") %>%
+select(TTP, browser) %>%
+mutate(logTTP = log(TTP)) %>%
+filter(browser %in% c("Chrome","Safari")) %>%
+mutate(logTTP_hms = logTTP_to_hms(logTTP) )
+ggbetweenstats(
+data = ddf,
+x = browser,
+y = logTTP
+) + scale_y_continuous(breaks = c(5,6,7,8), labels = logTTP_to_hms(5:8))
+df$campaign %>% unique
+ddf <- df %>%
+ungroup() %>%
+select(TTP,campaign) %>%
+mutate(logTTP = log(TTP)) %>%
+mutate(campaign = as.character(campaign)) %>%
+mutate(campaign = ifelse(is.na(campaign),"(none)",campaign)) %>%
+filter(campaign %in% c("(none)","(referral)","(organic)","(direct)"))
+# group_by(campaign) %>%
+# count()
+ggbetweenstats(
+data = ddf,
+x = campaign,
+y = logTTP
+)
+df$campaign %>% unique
+ddf <- df %>%
+ungroup() %>%
+select(TTP,campaign) %>%
+mutate(logTTP = log(TTP)) %>%
+mutate(campaign = as.character(campaign)) %>%
+mutate(campaign = ifelse(is.na(campaign),"(none)",campaign)) %>%
+filter(campaign %in% c("(none)","(referral)"))
+# group_by(campaign) %>%
+# count()
+ggbetweenstats(
+data = ddf,
+x = campaign,
+y = logTTP
+)
+df$campaign %>% unique
+ggbetweenstats(
+data = ddf,
+x = campaign,
+y = TTP
+)
+ggbetweenstats(
+data = ddf,
+x = campaign,
+y = logTTP
+)
+ggbetweenstats(
+data = ddf,
+x = campaign,
+y = TTP
+)
+ggbetweenstats(
+data = ddf,
+x = campaign,
+y = logTTP
+)
+ggbetweenstats(
+data = ddf,
+x = campaign,
+y = TTP
+)
+ggbetweenstats(
+data = ddf,
+x = campaign,
+y = TTP,
+type = "nonparametric"
+)
+ggbetweenstats(
+data = ddf,
+x = browser,
+y = TTP,
+type = "nonparametric"
+)
+ddf <- df %>%
+ungroup() %>%
+filter(country == "United States") %>%
+select(TTP, browser) %>%
+mutate(logTTP = log(TTP)) %>%
+filter(browser %in% c("Chrome","Safari")) %>%
+mutate(logTTP_hms = logTTP_to_hms(logTTP) )
+ggbetweenstats(
+data = ddf,
+x = browser,
+y = TTP,
+type = "nonparametric"
+)
+ggbetweenstats(
+data = ddf,
+x = device,
+y = TTP,
+type = "nonparametric"
+)
+ddf <- df %>%
+ungroup() %>%
+filter(country == "United States") %>%
+select(TTP, device) %>%
+mutate(logTTP = log(TTP)) %>%
+filter(device != "tablet")
+ggbetweenstats(
+data = ddf,
+x = device,
+y = TTP,
+type = "nonparametric"
+)
+ggbetweenstats(
+data = ddf,
+x = browser,
+y = TTP,
+type = "parametric"
+)
+ddf <- df %>%
+ungroup() %>%
+filter(country == "United States") %>%
+select(TTP, browser) %>%
+mutate(logTTP = log(TTP)) %>%
+filter(browser %in% c("Chrome","Safari")) %>%
+mutate(logTTP_hms = logTTP_to_hms(logTTP) )
+ddf <- df %>%
+ungroup() %>%
+filter(country == "United States") %>%
+select(TTP, browser) %>%
+mutate(logTTP = log(TTP)) %>%
+filter(browser %in% c("Chrome","Safari")) %>%
+mutate(logTTP_hms = logTTP_to_hms(logTTP) )
+ggbetweenstats(
+data = ddf,
+x = browser,
+y = TTP,
+type = "parametric"
+)
+ggbetweenstats(
+data = ddf,
+x = browser,
+y = logTTP,
+type = "parametric"
+)
+ddf <- df %>%
+ungroup() %>%
+filter(country == "United States") %>%
+select(TTP, browser) %>%
+mutate(logTTP = log(TTP)) %>%
+filter(browser %in% c("Chrome","Safari"))
+ggbetweenstats(
+data = ddf,
+x = browser,
+y = TTP,
+type = "nonparametric"
+)
+ddf <- df %>%
+select(TTP, is_on_sale) %>%
+mutate(logTTP = log(TTP)) %>%
+mutate(is_on_sale = ifelse(is_on_sale == 0, "regular_price","on_sale")) %>%
+mutate(is_on_sale = factor(is_on_sale))
+ggbetweenstats(
+data = ddf,
+x = is_on_sale,
+y = TTP,
+type = "nonparametric"
+)
+x1 <- rnorm(1000, mean = 0)
+x2 <- rnorm(1000, mean = 1)
+wilcox.test(x1,x2)
+?wilcox.test(x1,x2)
+wilcox.test(x1,x2, conf.int = T)
+wilcox.test(x2,x1, conf.int = T)
+ddf <- df %>%
+select(TTP, is_on_sale) %>%
+mutate(logTTP = log(TTP)) %>%
+mutate(is_on_sale = ifelse(is_on_sale == 0, "regular_price","on_sale")) %>%
+mutate(is_on_sale = factor(is_on_sale)) %>%
+mutate(logTTP_hms = logTTP_to_hms(logTTP) )
+ggbetweenstats(
+data = ddf,
+x = is_on_sale,
+y = logTTP,
+ylab = "TTP hms"
+) + scale_y_continuous(breaks = c(5,6,7,8), labels = logTTP_to_hms(5:8))
+ggbetweenstats(
+data = ddf,
+x = is_on_sale,
+y = logTTP,
+ylab = "TTP hms",
+type = "nonparametric"
+)
+ggbetweenstats(
+data = ddf,
+x = is_on_sale,
+y = logTTP,
+ylab = "TTP hms"
+) + scale_y_continuous(breaks = c(5,6,7,8), labels = logTTP_to_hms(5:8))
+df
+df %>%
+select(TTP, logTTP, user_pseudo_id, event_date)
+df %>%
+select(TTP, logTTP, user_pseudo_id, event_date) %>%
+group_by(user_pseudo_id) %>%
+mutate(is_returning_customer = ifelse( event_date == min(event_date), 0, 1 ))
+df %>%
+select(TTP, logTTP, user_pseudo_id, event_date) %>%
+group_by(user_pseudo_id) %>%
+mutate(is_returning_customer = ifelse( event_date == min(event_date), 0, 1 )) %>%
+count(is_returning_customer)
+df %>%
+select(TTP, logTTP, user_pseudo_id, event_date) %>%
+group_by(user_pseudo_id) %>%
+mutate(is_returning_customer = ifelse( event_date == min(event_date), 0, 1 )) %>%
+ungroup() %>%
+count(is_returning_customer)
+ddf <- df %>%
+select(TTP, logTTP, user_pseudo_id, event_date) %>%
+group_by(user_pseudo_id) %>%
+mutate(is_returning_customer = ifelse( event_date == min(event_date), 0, 1 )) %>%
+ungroup()
+ggbetweenstats(
+data = ddf,
+x = is_returning_customer,
+y = TTP
+)
+ggbetweenstats(
+data = ddf,
+x = is_returning_customer,
+y = logTTP
+)
+ggbetweenstats(
+data = ddf,
+x = is_returning_customer,
+y = TTP
+)
+ggbetweenstats(
+data = ddf,
+x = is_returning_customer,
+y = TTP,
+type = "nonparametric"
+)
+ggbetweenstats(
+data = ddf,
+x = is_returning_customer,
+y = TTP,
+type = "parametric"
+)
+ggbetweenstats(
+data = ddf,
+x = is_returning_customer,
+y = TTP,
+type = "nonparametric"
+)
+ggbetweenstats(
+data = ddf,
+x = is_returning_customer,
+y = logTTP,
+type = "nonparametric"
+)
+ggbetweenstats(
+data = ddf,
+x = is_returning_customer,
+y = logTTP,
+type = "parametric"
+)
+ggbetweenstats(
+data = ddf,
+x = is_returning_customer,
+y = TTP,
+type = "parametric"
+)
+ggbetweenstats(
+data = ddf,
+x = is_returning_customer,
+y = TTP,
+type = "nonparametric"
+)
+ggbetweenstats(
+data = ddf,
+x = is_on_sale,
+y = logTTP,
+ylab = "TTP hms",
+type = "nonparametric"
+) + scale_y_continuous(breaks = c(5,6,7,8), labels = logTTP_to_hms(5:8))
+ddf <- df %>%
+select(TTP, is_on_sale) %>%
+mutate(logTTP = log(TTP)) %>%
+mutate(is_on_sale = ifelse(is_on_sale == 0, "regular_price","on_sale")) %>%
+mutate(is_on_sale = factor(is_on_sale)) %>%
+mutate(logTTP_hms = logTTP_to_hms(logTTP) )
+ggbetweenstats(
+data = ddf,
+x = is_on_sale,
+y = logTTP,
+ylab = "TTP hms",
+type = "nonparametric"
+) + scale_y_continuous(breaks = c(5,6,7,8), labels = logTTP_to_hms(5:8))
+ggbetweenstats(
+data = ddf,
+x = is_on_sale,
+y = TTP,
+ylab = "TTP hms",
+type = "nonparametric"
+)
+ggbetweenstats(
+data = ddf,
+x = is_on_sale,
+y = TTP,
+ylab = "TTP hms",
+type = "parametric"
+)
+ggbetweenstats(
+data = ddf,
+x = is_on_sale,
+y = TTP,
+ylab = "TTP hms",
+type = "nonparametric"
+)
+ddf <- df %>%
+select(TTP, is_on_sale) %>%
+mutate(logTTP = log(TTP)) %>%
+mutate(is_on_sale = ifelse(is_on_sale == 0, "regular_price","on_sale")) %>%
+mutate(is_on_sale = factor(is_on_sale))
+ggbetweenstats(
+data = ddf,
+x = is_on_sale,
+y = TTP,
+ylab = "TTP hms",
+type = "nonparametric"
+)
+ddf <- df %>%
+select(TTP, is_on_sale) %>%
+mutate(logTTP = log(TTP)) %>%
+mutate(is_on_sale = ifelse(is_on_sale == 0, "regular_price","on_sale")) %>%
+mutate(is_on_sale = factor(is_on_sale))
+ggbetweenstats(
+data = ddf,
+x = is_on_sale,
+y = TTP,
+type = "nonparametric"
+)
+ddf <- df %>%
+select(TTP, logTTP, user_pseudo_id, event_date) %>%
+group_by(user_pseudo_id) %>%
+mutate(is_returning_customer = ifelse( event_date == min(event_date), 0, 1 )) %>%
+ungroup()
+ggbetweenstats(
+data = ddf,
+x = is_returning_customer,
+y = TTP,
+type = "nonparametric"
+)
+ddf <- df %>%
+select(TTP, logTTP, user_pseudo_id, event_date, total_due) %>%
+group_by(user_pseudo_id) %>%
+mutate(is_returning_customer = ifelse( event_date == min(event_date), 0, 1 )) %>%
+ungroup()
+ggbetweenstats(
+data = ddf,
+x = is_returning_customer,
+y = total_due,
+type = "parametric"
+)
+ddf <- df %>%
+select(TTP, logTTP, user_pseudo_id, event_date, total_due) %>%
+mutate(log_total_due = log(total_due)) %>%
+group_by(user_pseudo_id) %>%
+mutate(is_returning_customer = ifelse( event_date == min(event_date), 0, 1 )) %>%
+ungroup()
+ggbetweenstats(
+data = ddf,
+x = is_returning_customer,
+y = total_due,
+type = "nonparametric"
+)
+ggbetweenstats(
+data = ddf,
+x = is_returning_customer,
+y = log_total_due,
+type = "nonparametric"
+)
+rm(list=ls())

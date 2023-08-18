@@ -1,0 +1,41 @@
+---
+title: ""
+image: ""
+about:
+  template: jolla
+  image-width: 8em
+---
+
+### leonardo cerliani
+_data analysis & brain imaging_
+
+```{r load_packages, message=FALSE, warning=FALSE, include=FALSE} 
+library(fontawesome)
+
+iconize <- function(fa_name) {
+  icon <- fa(fa_name, height="20px", fill = "grey")
+  return(icon)
+}
+
+book <- iconize("book-reader")
+publications <- iconize("book-reader")
+linkedin <- iconize("linkedin")
+twitter <- iconize("twitter")
+brain <- iconize("brain")
+email <- iconize("at")
+github <- iconize("github")
+
+```
+
+\
+[`r linkedin`](https://www.linkedin.com/in/leonardocerliani/){target="_blank"}
+&nbsp;&nbsp;&nbsp;
+[`r github`](https://github.com/leonardocerliani){target="_blank"}
+&nbsp;&nbsp;&nbsp;
+[`r publications`](https://scholar.google.com/citations?user=Yo8tYMMAAAAJ&hl=en){target="_blank"}
+&nbsp;&nbsp;&nbsp;
+[`r twitter`](https://twitter.com/leonardo_8d?lang=en){target="_blank"}
+&nbsp;&nbsp;&nbsp;
+[`r email`](mailto:leonardo.cerliani@gmail.com)
+
+

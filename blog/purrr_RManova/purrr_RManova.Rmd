@@ -1,0 +1,164 @@
+---
+title: "How to replace for loops using `purrr::map`"
+author: "LC"
+date: "2022-12-26"
+categories: [purrr]
+image: "magkaki.jpg"
+execute:
+  echo: true
+
+---
+
+
+
+## Introduction
+
+In many cases you need to repeat the same action across multiple objects, for instance loading many files, or computing summary statistics across many vectors of observations. Instead of repeating the same operation manually for every object - which is not only time consuming, but especially prone to mistakes - you can use `for` loops.
+
+However `for` can be quite verbose, and especially in case you need to nest them - i.e. running a loop inside a loop - it can be difficult to inspect the code for errors during the analysis and especially in the future.
+
+Base R already provides some functions to avoid the creation of `for` loops, with the [family of `apply` functions](https://www.guru99.com/r-apply-sapply-tapply.html). However sometimes the syntax can be different across functions, and still a bit verbose.
+
+The [tidyverse](https://www.tidyverse.org/) provides functions that help getting rid of `for` loops for good using the [`purrr`](https://purrr.tidyverse.org/) package. Below there is just an example. More details can be found in the [iteration chapter of R for Data Science](https://r4ds.had.co.nz/iteration.html) and in the [functionals chapter of Advanced R](https://adv-r.hadley.nz/functionals.html)
+
+
+```{r, message=F}
+library(tidyverse)
+library(reactable)
+options(digits=2)
+```
+
+
+Let's say you collected data in 8 different runs of an experiment. For instance the time, in seconds, spent freezing, running or grooming in 10 participants after a given stimulus in each subsequent run.
+
+For our example we will create some random data. The code below creates 8 dataframes with 10 observations for three distinct variables. It already uses the `map` function that we are going to explain later, so for now you can just disregard it, and come back later to understand what it does as an excercise.
+
+```{r create-data, results='hide'}
+
+
+1:8 %>% map( function(x) {
+  tibble(
+    SUBID = map(1:10, ~ paste0("sub_",.x) ) %>% unlist(),
+    freezing = runif(10)*10 * log(x+1),
+    running = runif(10)*10,
+    grooming = runif(10)*10
+  ) %>%
+    write_csv(paste0("run_",x,".csv"))
+})
+
+```
+
+We obtain 8 csv files with our data. 
+
+```{r}
+myfiles <- list.files(pattern = ".csv", full.names = T)
+myfiles
+
+read.csv("run_1.csv")
+```
+
+
+## `purrr::map`
+
+Now you want to load everything in the same dataframe (i.e. table), for instance to carry out a RM-ANOVA. You could use a for loop to load all the files:
+
+```{r}
+
+allruns = vector(mode = "list", length = 8)
+
+for (run in 1:length(allruns)) {
+  allruns[[run]] <- read.csv( myfiles[[run]] )
+}
+
+# allruns
+
+```
+
+Or you could use the `map` function inside the `purrr` package
+
+```{r}
+
+allruns <- map(myfiles, read.csv)
+
+# allruns
+
+```
+
+**In other words you passed to every element of the list `myfiles` the function `read.csv`** 
+
+Note the advantages:
+
+- you do not need to write extra code to initialize an empty list, since the result is automatically stored in a list
+- you don't need to provide the total number of files, 
+- the syntax is much more concise (and when you get used to it, also much more readable).
+
+## `purrr::map2`
+
+To carry out the RM-ANOVA, you need to combine all the tables into one singe dataframe, but also retain information about the different run. 
+
+The idea is the same as before: you have a function that creates a column with the run numba in each run's data table. This means that you want to provide _two_ lists: (1) the list containing the table of each run and (2) the list of filenames.
+
+```{r}
+
+alldata <- map2(
+ allruns, myfiles, function(run, file) {
+  run %>% mutate(run = file)
+ }
+) %>% bind_rows()
+
+```
+
+or with a more concise syntax:
+
+```{r}
+
+alldata <- map2_dfr(allruns, myfiles, ~ .x %>% mutate(run = .y))
+
+```
+
+You might have noticed that here I used a specific flavor of `map`, that is `map_dfr`, which returns a dataframe (or a `tibble` in the tidyverse language) instead of the default list, so that I can drop the final `bind_rows()`.
+
+## `purrr::pmap`
+
+As you might expect, there is also a function `pmap` which allows you to pass an arbitrary number of tables. I personally prefer this syntax since it allows me to pipe the list into it:
+
+```{r}
+
+alldata <- list(allruns, myfiles) %>% pmap_df(~ .x %>% mutate(run = .y))
+
+alldata %>% reactable(
+ defaultColDef = colDef(
+  format = colFormat(digits = 2), minWidth = 50
+ ),
+ style = list(fontFamily = "Arial Narrow")
+)
+
+
+```
+
+
+## `map` is similar to `group_by` for dataframes
+
+Finally, note that the `map` function - and its variation, such as `pmap`, is a similar operator for list to the `group_by` operator inside dataframes.
+
+For instance let's say that you want to get the mean and standard deviation for every variable in each run:
+
+```{r}
+
+descriptives <- alldata %>% 
+  group_by(run) %>%
+  summarise(
+    across(where(is.numeric), list(mean = mean, sd = sd)),
+    .groups = "drop"
+  ) %>% ungroup() 
+
+
+descriptives %>% reactable(
+ defaultColDef = colDef(
+  format = colFormat(digits = 2), minWidth = 50
+ ),
+ style = list(fontFamily = "Arial Narrow")
+)
+
+```
+

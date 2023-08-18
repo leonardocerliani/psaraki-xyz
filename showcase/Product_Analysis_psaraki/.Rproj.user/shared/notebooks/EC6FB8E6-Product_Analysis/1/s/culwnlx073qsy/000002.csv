@@ -1,0 +1,12 @@
+"0","df %>% n_purchases
+"
+"2","Error in n_purchases(.) : could not find function ""n_purchases""
+"
+"2","In addition: "
+"2","Warning message:
+"
+"2","In class(obj) <- c(""scalar"", class(obj)) :"
+"2","
+ "
+"2"," Setting class(x) to multiple strings (""scalar"", ""SQL"", ...); result will no longer be an S4 object
+"

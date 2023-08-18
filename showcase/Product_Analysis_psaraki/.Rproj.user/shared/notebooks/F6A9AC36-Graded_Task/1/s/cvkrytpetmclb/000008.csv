@@ -1,0 +1,23 @@
+"0","df <- read_csv(""Graded_Task_Data_V2.csv"") %>% "
+"0"," mutate_at("
+"0","  c(""user_pseudo_id"",""country"",""device"",""OS"",""browser""), "
+"0","  factor"
+"0"," ) %>% "
+"0"," filter(country != ""(not set)"") %>% "
+"0"," mutate(campaign = ifelse(campaign %in% c(""<Other>"",""(data deleted)""), NA, campaign) ) %>% "
+"0"," mutate(campaign = factor(campaign)) %>% "
+"0"," relocate(TTP)"
+"1","[1mRows: [22m[34m4633[39m [1mColumns: [22m[34m25[39m
+"
+"1","[36m──[39m [1mColumn specification[22m [36m────────────────────────────────────────────────────────────────────[39m
+[1mDelimiter:[22m "",""
+[31mchr[39m   (5): country, device, OS, browser, campaign
+[32mdbl[39m  (17): user_pseudo_id, min_session_start_timestamp, min_purchase_timestamp, n_items,...
+[34mdate[39m  (1): event_date
+[34mtime[39m  (2): min_session_start_time, min_purchase_time
+"
+"1","
+[36mℹ[39m Use `spec()` to retrieve the full column specification for this data.
+[36mℹ[39m Specify the column types or set `show_col_types = FALSE` to quiet this message.
+"
+"0","# summary(df)"

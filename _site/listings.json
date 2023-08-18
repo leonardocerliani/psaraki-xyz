@@ -1,0 +1,17 @@
+[
+  {
+    "listing": "/showcase.html",
+    "items": [
+      "/showcase/Marketing_Analysis_psaraki/Marketing_Analysis.html",
+      "/showcase/Product_Analysis_psaraki/Product_Analysis.html",
+      "/showcase/dimred_app/dimred_app.html"
+    ]
+  },
+  {
+    "listing": "/blog.html",
+    "items": [
+      "/blog/purrr_RManova/purrr_RManova.html",
+      "/blog/post_001/post_001.html"
+    ]
+  }
+]

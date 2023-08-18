@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.280">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="LC">
+<meta name="dcterms.date" content="2022-12-26">
+
+<title>LC - How to replace for loops using purrr::map</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+<script src="../../site_libs/core-js-2.5.3/shim.min.js"></script>
+<script src="../../site_libs/react-17.0.0/react.min.js"></script>
+<script src="../../site_libs/react-17.0.0/react-dom.min.js"></script>
+<script src="../../site_libs/reactwidget-1.0.0/react-tools.js"></script>
+<script src="../../site_libs/htmlwidgets-1.6.0/htmlwidgets.js"></script>
+<link href="../../site_libs/reactable-0.4.1/reactable.css" rel="stylesheet">
+<script src="../../site_libs/reactable-binding-0.4.1/reactable.js"></script>
+
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">LC</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../index.html">
+ <span class="menu-text">about</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../blog.html">
+ <span class="menu-text">blog</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../showcase.html">
+ <span class="menu-text">showcase</span></a>
+  </li>  
+</ul>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#purrrmap" id="toc-purrrmap" class="nav-link" data-scroll-target="#purrrmap"><code>purrr::map</code></a></li>
+  <li><a href="#purrrmap2" id="toc-purrrmap2" class="nav-link" data-scroll-target="#purrrmap2"><code>purrr::map2</code></a></li>
+  <li><a href="#purrrpmap" id="toc-purrrpmap" class="nav-link" data-scroll-target="#purrrpmap"><code>purrr::pmap</code></a></li>
+  <li><a href="#map-is-similar-to-group_by-for-dataframes" id="toc-map-is-similar-to-group_by-for-dataframes" class="nav-link" data-scroll-target="#map-is-similar-to-group_by-for-dataframes"><code>map</code> is similar to <code>group_by</code> for dataframes</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">How to replace for loops using <code>purrr::map</code></h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">purrr</div>
+  </div>
+  </div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>LC </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">December 26, 2022</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>In many cases you need to repeat the same action across multiple objects, for instance loading many files, or computing summary statistics across many vectors of observations. Instead of repeating the same operation manually for every object - which is not only time consuming, but especially prone to mistakes - you can use <code>for</code> loops.</p>
+<p>However <code>for</code> can be quite verbose, and especially in case you need to nest them - i.e.&nbsp;running a loop inside a loop - it can be difficult to inspect the code for errors during the analysis and especially in the future.</p>
+<p>Base R already provides some functions to avoid the creation of <code>for</code> loops, with the <a href="https://www.guru99.com/r-apply-sapply-tapply.html">family of <code>apply</code> functions</a>. However sometimes the syntax can be different across functions, and still a bit verbose.</p>
+<p>The <a href="https://www.tidyverse.org/">tidyverse</a> provides functions that help getting rid of <code>for</code> loops for good using the <a href="https://purrr.tidyverse.org/"><code>purrr</code></a> package. Below there is just an example. More details can be found in the <a href="https://r4ds.had.co.nz/iteration.html">iteration chapter of R for Data Science</a> and in the <a href="https://adv-r.hadley.nz/functionals.html">functionals chapter of Advanced R</a></p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(reactable)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">digits=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Let’s say you collected data in 8 different runs of an experiment. For instance the time, in seconds, spent freezing, running or grooming in 10 participants after a given stimulus in each subsequent run.</p>
+<p>For our example we will create some random data. The code below creates 8 dataframes with 10 observations for three distinct variables. It already uses the <code>map</code> function that we are going to explain later, so for now you can just disregard it, and come back later to understand what it does as an excercise.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span><span class="sc">:</span><span class="dv">8</span> <span class="sc">%&gt;%</span> <span class="fu">map</span>( <span class="cf">function</span>(x) {</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">SUBID =</span> <span class="fu">map</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>, <span class="sc">~</span> <span class="fu">paste0</span>(<span class="st">"sub_"</span>,.x) ) <span class="sc">%&gt;%</span> <span class="fu">unlist</span>(),</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">freezing =</span> <span class="fu">runif</span>(<span class="dv">10</span>)<span class="sc">*</span><span class="dv">10</span> <span class="sc">*</span> <span class="fu">log</span>(x<span class="sc">+</span><span class="dv">1</span>),</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">running =</span> <span class="fu">runif</span>(<span class="dv">10</span>)<span class="sc">*</span><span class="dv">10</span>,</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">grooming =</span> <span class="fu">runif</span>(<span class="dv">10</span>)<span class="sc">*</span><span class="dv">10</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">write_csv</span>(<span class="fu">paste0</span>(<span class="st">"run_"</span>,x,<span class="st">".csv"</span>))</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>We obtain 8 csv files with our data.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>myfiles <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="at">pattern =</span> <span class="st">".csv"</span>, <span class="at">full.names =</span> T)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>myfiles</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "./run_1.csv" "./run_2.csv" "./run_3.csv" "./run_4.csv" "./run_5.csv"
+[6] "./run_6.csv" "./run_7.csv" "./run_8.csv"</code></pre>
+</div>
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">read.csv</span>(<span class="st">"run_1.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>    SUBID freezing running grooming
+1   sub_1      2.7     9.7     1.24
+2   sub_2      6.9     5.1     6.35
+3   sub_3      1.1     5.6     0.32
+4   sub_4      1.7     8.6     9.19
+5   sub_5      2.6     7.6     3.53
+6   sub_6      5.4     8.5     0.74
+7   sub_7      4.1     5.9     0.29
+8   sub_8      2.3     4.2     1.02
+9   sub_9      5.8    10.0     3.53
+10 sub_10      3.6     6.8     2.60</code></pre>
+</div>
+</div>
+</section>
+<section id="purrrmap" class="level2">
+<h2 class="anchored" data-anchor-id="purrrmap"><code>purrr::map</code></h2>
+<p>Now you want to load everything in the same dataframe (i.e.&nbsp;table), for instance to carry out a RM-ANOVA. You could use a for loop to load all the files:</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>allruns <span class="ot">=</span> <span class="fu">vector</span>(<span class="at">mode =</span> <span class="st">"list"</span>, <span class="at">length =</span> <span class="dv">8</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (run <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(allruns)) {</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  allruns[[run]] <span class="ot">&lt;-</span> <span class="fu">read.csv</span>( myfiles[[run]] )</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co"># allruns</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Or you could use the <code>map</code> function inside the <code>purrr</code> package</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>allruns <span class="ot">&lt;-</span> <span class="fu">map</span>(myfiles, read.csv)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co"># allruns</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p><strong>In other words you passed to every element of the list <code>myfiles</code> the function <code>read.csv</code></strong></p>
+<p>Note the advantages:</p>
+<ul>
+<li>you do not need to write extra code to initialize an empty list, since the result is automatically stored in a list</li>
+<li>you don’t need to provide the total number of files,</li>
+<li>the syntax is much more concise (and when you get used to it, also much more readable).</li>
+</ul>
+</section>
+<section id="purrrmap2" class="level2">
+<h2 class="anchored" data-anchor-id="purrrmap2"><code>purrr::map2</code></h2>
+<p>To carry out the RM-ANOVA, you need to combine all the tables into one singe dataframe, but also retain information about the different run.</p>
+<p>The idea is the same as before: you have a function that creates a column with the run numba in each run’s data table. This means that you want to provide <em>two</em> lists: (1) the list containing the table of each run and (2) the list of filenames.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>alldata <span class="ot">&lt;-</span> <span class="fu">map2</span>(</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a> allruns, myfiles, <span class="cf">function</span>(run, file) {</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  run <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">run =</span> file)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a> }</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span> <span class="fu">bind_rows</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>or with a more concise syntax:</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>alldata <span class="ot">&lt;-</span> <span class="fu">map2_dfr</span>(allruns, myfiles, <span class="sc">~</span> .x <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">run =</span> .y))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>You might have noticed that here I used a specific flavor of <code>map</code>, that is <code>map_dfr</code>, which returns a dataframe (or a <code>tibble</code> in the tidyverse language) instead of the default list, so that I can drop the final <code>bind_rows()</code>.</p>
+</section>
+<section id="purrrpmap" class="level2">
+<h2 class="anchored" data-anchor-id="purrrpmap"><code>purrr::pmap</code></h2>
+<p>As you might expect, there is also a function <code>pmap</code> which allows you to pass an arbitrary number of tables. I personally prefer this syntax since it allows me to pipe the list into it:</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>alldata <span class="ot">&lt;-</span> <span class="fu">list</span>(allruns, myfiles) <span class="sc">%&gt;%</span> <span class="fu">pmap_df</span>(<span class="sc">~</span> .x <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">run =</span> .y))</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>alldata <span class="sc">%&gt;%</span> <span class="fu">reactable</span>(</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a> <span class="at">defaultColDef =</span> <span class="fu">colDef</span>(</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">format =</span> <span class="fu">colFormat</span>(<span class="at">digits =</span> <span class="dv">2</span>), <span class="at">minWidth =</span> <span class="dv">50</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a> ),</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a> <span class="at">style =</span> <span class="fu">list</span>(<span class="at">fontFamily =</span> <span class="st">"Arial Narrow"</span>)</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+
+<div class="reactable html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-28fd2a05b558f233226c" style="width:auto;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-28fd2a05b558f233226c">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"SUBID":["sub_1","sub_2","sub_3","sub_4","sub_5","sub_6","sub_7","sub_8","sub_9","sub_10","sub_1","sub_2","sub_3","sub_4","sub_5","sub_6","sub_7","sub_8","sub_9","sub_10","sub_1","sub_2","sub_3","sub_4","sub_5","sub_6","sub_7","sub_8","sub_9","sub_10","sub_1","sub_2","sub_3","sub_4","sub_5","sub_6","sub_7","sub_8","sub_9","sub_10","sub_1","sub_2","sub_3","sub_4","sub_5","sub_6","sub_7","sub_8","sub_9","sub_10","sub_1","sub_2","sub_3","sub_4","sub_5","sub_6","sub_7","sub_8","sub_9","sub_10","sub_1","sub_2","sub_3","sub_4","sub_5","sub_6","sub_7","sub_8","sub_9","sub_10","sub_1","sub_2","sub_3","sub_4","sub_5","sub_6","sub_7","sub_8","sub_9","sub_10"],"freezing":[2.71994227050022,6.90580923100372,1.10696557207401,1.68760843331871,2.62720129903068,5.39014129160034,4.13315446868363,2.25514325384081,5.79425303042941,3.63378280200426,7.14320050356277,6.44145024020622,1.4701875703433,7.87608678127035,2.60582374697224,6.80453715563061,5.84283651426367,10.0990509810461,7.39122111976003,7.75459379933395,4.10920619164734,1.06147546742679,6.62195164556177,13.0131363924571,2.32729008477833,7.37207570709597,5.28747542754696,5.86817833887276,12.0606491093162,9.2808319001621,3.63844431760294,14.397885335121,8.88276730723926,8.28549260448828,6.94513729630606,7.00831851661051,11.5878210541184,3.51465155623375,4.77422354666962,12.834903122934,1.43404829726105,7.33718229713751,14.5474487408008,17.5396094160608,17.7992505228497,8.74791405272587,8.97165563981024,10.6744331089884,15.3785105186278,4.08414528047156,9.60801011134336,6.79427642854377,14.3304856907946,18.2199997384402,14.1692273147311,12.3266906513738,13.0316842247777,4.13560473038097,2.31295000602127,10.9104007781942,6.75096905031905,17.6246121654755,12.3813434695884,8.53852888358447,7.51766985047808,12.3378524634335,0.612419665088069,10.2928521855724,5.89561527401989,18.4381619444366,12.1114387232022,2.12006876547147,20.120622470748,10.1098119972105,18.6406172195331,13.2617959536143,17.2791304584944,8.96903744005044,16.3533134867427,10.6337221123948],"running":[9.65661575086415,5.0827324623242,5.56817409116775,8.58460282441229,7.55065191769972,8.53505889186636,5.93221244169399,4.18356485199183,9.95887670665979,6.7728585912846,4.33809091104195,3.42939008725807,4.83222157461569,5.48614003229886,2.9818942444399,9.70122677274048,8.64790678257123,7.04464368056506,3.25445511611179,8.70078834006563,3.92419417621568,0.757806561887264,2.23755549872294,5.11270751710981,4.3547687958926,7.55824034335092,1.87443178845569,6.3176806201227,8.62171419430524,1.62461788859218,2.17619713628665,7.06787971314043,9.41234144382179,0.464034371543676,9.34540687827393,0.937958562280983,6.74946155166253,0.289644082076848,4.48183883680031,5.51919982535765,0.666347569786012,1.15962997777387,6.32988015422598,4.95565503137186,1.70420330716297,0.48800919437781,7.88950183894485,4.75528749637306,1.51095903478563,0.808432730846107,2.32984360074624,1.01597528904676,9.22563230386004,7.46546716662124,4.72950213123113,6.00787422386929,0.774941260460764,7.71622294094414,0.617287582717836,1.6028622048907,8.78773134434596,0.0960704265162349,8.87452711351216,3.00045678857714,1.43235272262245,3.20424907375127,6.59111231332645,6.19854608783498,5.36427346291021,4.30197042180225,6.46993338828906,4.71894904971123,4.58323647966608,9.41941525554284,5.8151793689467,5.1264990796335,5.89073712006211,9.19760404154658,6.32206404116005,5.1540856459178],"grooming":[1.23845408670604,6.34840271901339,0.318839019164443,9.18782639317214,3.52603582665324,0.742069019470364,0.292938253842294,1.01824598386884,3.52865660330281,2.60246376041323,4.02411186834797,2.8723284509033,3.32026559393853,1.19870922528207,6.20502387871966,4.69505162676796,5.38490659790114,3.78551798639819,5.07780305575579,9.21471282839775,3.57840180164203,7.30539716081694,0.052995583973825,6.81884422898293,4.41006210632622,4.34358587255701,0.278195221908391,1.3339681038633,2.67404584214091,7.47765049804002,6.98266104795039,1.67720642173663,9.07717906404287,8.07088264031336,3.61980286892503,0.60112347593531,6.15737779997289,6.78492652485147,6.38274601195008,8.06445907568559,6.06333476258442,5.14666376868263,6.40383257297799,7.15781301027164,0.658096803817898,1.15829404909164,8.05509592639282,5.4318833630532,1.88036061357707,5.13025108492002,4.80552416760474,4.18090594932437,6.88189261127263,4.57659666193649,0.718572442419827,2.48852245975286,5.40148265659809,6.94484540261328,3.1037385459058,7.37633433192968,3.74629152705893,0.0182942999526858,7.07010877551511,5.50136848120019,3.77726072911173,7.49256354290992,0.2900236309506,2.40357155213133,4.96915665455163,8.02275098161772,2.23297793418169,7.76177308522165,9.53129029367119,2.16721336590126,5.17377668758854,5.36868508905172,2.77371177915484,4.47393228299916,3.57225408311933,3.81471467670053],"run":["./run_1.csv","./run_1.csv","./run_1.csv","./run_1.csv","./run_1.csv","./run_1.csv","./run_1.csv","./run_1.csv","./run_1.csv","./run_1.csv","./run_2.csv","./run_2.csv","./run_2.csv","./run_2.csv","./run_2.csv","./run_2.csv","./run_2.csv","./run_2.csv","./run_2.csv","./run_2.csv","./run_3.csv","./run_3.csv","./run_3.csv","./run_3.csv","./run_3.csv","./run_3.csv","./run_3.csv","./run_3.csv","./run_3.csv","./run_3.csv","./run_4.csv","./run_4.csv","./run_4.csv","./run_4.csv","./run_4.csv","./run_4.csv","./run_4.csv","./run_4.csv","./run_4.csv","./run_4.csv","./run_5.csv","./run_5.csv","./run_5.csv","./run_5.csv","./run_5.csv","./run_5.csv","./run_5.csv","./run_5.csv","./run_5.csv","./run_5.csv","./run_6.csv","./run_6.csv","./run_6.csv","./run_6.csv","./run_6.csv","./run_6.csv","./run_6.csv","./run_6.csv","./run_6.csv","./run_6.csv","./run_7.csv","./run_7.csv","./run_7.csv","./run_7.csv","./run_7.csv","./run_7.csv","./run_7.csv","./run_7.csv","./run_7.csv","./run_7.csv","./run_8.csv","./run_8.csv","./run_8.csv","./run_8.csv","./run_8.csv","./run_8.csv","./run_8.csv","./run_8.csv","./run_8.csv","./run_8.csv"]},"columns":[{"id":"SUBID","name":"SUBID","type":"character","format":{"cell":{"digits":2},"aggregated":{"digits":2}},"minWidth":50},{"id":"freezing","name":"freezing","type":"numeric","format":{"cell":{"digits":2},"aggregated":{"digits":2}},"minWidth":50},{"id":"running","name":"running","type":"numeric","format":{"cell":{"digits":2},"aggregated":{"digits":2}},"minWidth":50},{"id":"grooming","name":"grooming","type":"numeric","format":{"cell":{"digits":2},"aggregated":{"digits":2}},"minWidth":50},{"id":"run","name":"run","type":"character","format":{"cell":{"digits":2},"aggregated":{"digits":2}},"minWidth":50}],"style":{"fontFamily":"Arial Narrow"},"dataKey":"39cbd858d1af18579d9e9946ebd1dd02"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+</section>
+<section id="map-is-similar-to-group_by-for-dataframes" class="level2">
+<h2 class="anchored" data-anchor-id="map-is-similar-to-group_by-for-dataframes"><code>map</code> is similar to <code>group_by</code> for dataframes</h2>
+<p>Finally, note that the <code>map</code> function - and its variation, such as <code>pmap</code>, is a similar operator for list to the <code>group_by</code> operator inside dataframes.</p>
+<p>For instance let’s say that you want to get the mean and standard deviation for every variable in each run:</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>descriptives <span class="ot">&lt;-</span> alldata <span class="sc">%&gt;%</span> </span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(run) <span class="sc">%&gt;%</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">across</span>(<span class="fu">where</span>(is.numeric), <span class="fu">list</span>(<span class="at">mean =</span> mean, <span class="at">sd =</span> sd)),</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">"drop"</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> <span class="fu">ungroup</span>() </span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>descriptives <span class="sc">%&gt;%</span> <span class="fu">reactable</span>(</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a> <span class="at">defaultColDef =</span> <span class="fu">colDef</span>(</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">format =</span> <span class="fu">colFormat</span>(<span class="at">digits =</span> <span class="dv">2</span>), <span class="at">minWidth =</span> <span class="dv">50</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a> ),</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a> <span class="at">style =</span> <span class="fu">list</span>(<span class="at">fontFamily =</span> <span class="st">"Arial Narrow"</span>)</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+
+<div class="reactable html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-56ab44866abda56d5ec6" style="width:auto;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-56ab44866abda56d5ec6">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"run":["./run_1.csv","./run_2.csv","./run_3.csv","./run_4.csv","./run_5.csv","./run_6.csv","./run_7.csv","./run_8.csv"],"freezing_mean":[3.62540016524858,6.34289884123893,6.70022702648653,8.18696446573237,10.6514197874734,10.5839329674601,10.0390024951996,12.9599558627462],"freezing_sd":[1.90404863701769,2.54675434391007,3.88763905038023,3.79086961241553,5.59346585098187,4.94008320550391,5.41982872240931,5.39023354786424],"running_mean":[7.18253485299647,5.84167575417086,4.2383717384655,4.64439624012448,3.02679063356481,4.14856087043881,4.78512897551991,6.2697703470476],"running_sd":[1.98606447838879,2.505329365867,2.66610376938651,3.53078618257586,2.70259270459769,3.27878500862018,2.93418154186728,1.72197744647874],"grooming_mean":[2.88039316656068,4.57784311124124,3.82731464202516,5.74183649313636,4.70856259553693,4.64784152293578,4.32913901749998,4.68703292775899],"grooming_sd":[2.91961979359184,2.15784233690275,2.77744659366552,2.84030198523299,2.57789349695668,2.13473640994701,2.83228627644711,2.39685402285156]},"columns":[{"id":"run","name":"run","type":"character","format":{"cell":{"digits":2},"aggregated":{"digits":2}},"minWidth":50},{"id":"freezing_mean","name":"freezing_mean","type":"numeric","format":{"cell":{"digits":2},"aggregated":{"digits":2}},"minWidth":50},{"id":"freezing_sd","name":"freezing_sd","type":"numeric","format":{"cell":{"digits":2},"aggregated":{"digits":2}},"minWidth":50},{"id":"running_mean","name":"running_mean","type":"numeric","format":{"cell":{"digits":2},"aggregated":{"digits":2}},"minWidth":50},{"id":"running_sd","name":"running_sd","type":"numeric","format":{"cell":{"digits":2},"aggregated":{"digits":2}},"minWidth":50},{"id":"grooming_mean","name":"grooming_mean","type":"numeric","format":{"cell":{"digits":2},"aggregated":{"digits":2}},"minWidth":50},{"id":"grooming_sd","name":"grooming_sd","type":"numeric","format":{"cell":{"digits":2},"aggregated":{"digits":2}},"minWidth":50}],"style":{"fontFamily":"Arial Narrow"},"dataKey":"81ad43171a8d3fd9a0f39e63484d0226"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.280">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="LC">
+<meta name="dcterms.date" content="2022-12-28">
+
+<title>LC - Interactive data exploration in neuroimaging: a simple example</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+<script src="../../site_libs/core-js-2.5.3/shim.min.js"></script>
+<script src="../../site_libs/react-17.0.0/react.min.js"></script>
+<script src="../../site_libs/react-17.0.0/react-dom.min.js"></script>
+<script src="../../site_libs/reactwidget-1.0.0/react-tools.js"></script>
+<script src="../../site_libs/htmlwidgets-1.6.0/htmlwidgets.js"></script>
+<link href="../../site_libs/reactable-0.4.1/reactable.css" rel="stylesheet">
+<script src="../../site_libs/reactable-binding-0.4.1/reactable.js"></script>
+<script src="../../site_libs/plotly-binding-4.10.1/plotly.js"></script>
+<script src="../../site_libs/typedarray-0.1/typedarray.min.js"></script>
+<script src="../../site_libs/jquery-3.5.1/jquery.min.js"></script>
+<link href="../../site_libs/crosstalk-1.2.0/css/crosstalk.min.css" rel="stylesheet">
+<script src="../../site_libs/crosstalk-1.2.0/js/crosstalk.min.js"></script>
+<link href="../../site_libs/plotly-htmlwidgets-css-2.11.1/plotly-htmlwidgets.css" rel="stylesheet">
+<script src="../../site_libs/plotly-main-2.11.1/plotly-latest.min.js"></script>
+
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">LC</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../index.html">
+ <span class="menu-text">about</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../blog.html">
+ <span class="menu-text">blog</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../showcase.html">
+ <span class="menu-text">showcase</span></a>
+  </li>  
+</ul>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#github-repos" id="toc-github-repos" class="nav-link active" data-scroll-target="#github-repos">Github repos</a></li>
+  <li><a href="#a-simple-fmri-experiment" id="toc-a-simple-fmri-experiment" class="nav-link" data-scroll-target="#a-simple-fmri-experiment">A simple fMRI experiment</a></li>
+  <li><a href="#effect-of-task-in-different-brain-regions-across-participants" id="toc-effect-of-task-in-different-brain-regions-across-participants" class="nav-link" data-scroll-target="#effect-of-task-in-different-brain-regions-across-participants">Effect of task in different brain regions across participants</a></li>
+  <li><a href="#a-different-visualization" id="toc-a-different-visualization" class="nav-link" data-scroll-target="#a-different-visualization">A different visualization</a></li>
+  <li><a href="#reducing-the-dimensionality-for-a-sharper-view" id="toc-reducing-the-dimensionality-for-a-sharper-view" class="nav-link" data-scroll-target="#reducing-the-dimensionality-for-a-sharper-view">Reducing the dimensionality for a sharper view</a></li>
+  <li><a href="#bringing-all-together-in-an-interactive-app" id="toc-bringing-all-together-in-an-interactive-app" class="nav-link" data-scroll-target="#bringing-all-together-in-an-interactive-app">Bringing all together in an interactive app</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Interactive data exploration in neuroimaging: a simple example</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">shiny app</div>
+    <div class="quarto-category">neuroimaging</div>
+  </div>
+  </div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>LC </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">December 28, 2022</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<div class="cell">
+
+</div>
+<div class="cell">
+
+</div>
+<p><br>
+<br>
+<img src="dimred.gif" class="img-fluid"></p>
+<p><br>
+<br>
+<a href="https://en.wikipedia.org/wiki/Konrad_Lorenz" target="_blank">Konrad Lorenz</a> once said that “It is a good morning exercise for a research scientist to discard a pet hypothesis every day before breakfast. It keeps him young” (<a href="https://www.oxfordreference.com/display/10.1093/acref/9780191826719.001.0001/q-oro-ed4-00006809;jsessionid=09C85D7EBCE0EBCDD5B27E04309183FE" target="_blank">ref</a>). Having spent quite some years doing scientific research, I can comfortably say that this is one of the mantra for the morning ritual of every researcher. Another useful mantra on the same line is a quote by <a href="https://en.wikipedia.org/wiki/Richard_Feynman" target="_blank">Richard Feynman</a>: “you must not fool yourself and you are the easiest person to fool” (<a href="https://archive.org/details/RICHARDP.FEYNMANSURELYYOUREJOKINGMR.FEYNMAN/page/n7/mode/2up?q=%22you+are+the+easiest+person+to+fool%22" target="_blank">ref</a>).</p>
+<p>From a practical standpoint, these two quotes provide an interesting perspective on why I think visualization is so useful and actually indispensable for a researcher and for everyone who works with data: <strong>images are a great device to show us when our hypotheses are correct <em>and</em> when they are wrong</strong> (or when there is something wrong in the data).</p>
+<p>Visualization is key not just to communicate a complex result in an intuitive way, but also for inspecting every step of the analysis, in order to validate - or invalidate - previous assumptions, avoid wrong conclusions, get useful insights to re(de)fine our hypotheses, and design the next analytic step.</p>
+<p>Another reason why data visualization is tremendously helpful in data analysis is that <strong>data is always multifaceted</strong>: when you look at it from different perspectives (e.g.&nbsp;different summary statistics, for different variables, observations, or groups of them), it shows one of its many aspect, and usually <strong>a meaningful result stands out only when there is consistency among most of the perspectives from which we can look at our data</strong>: only if it squeaks like a duck, looks like a duck, walks like a duck, then most likely it is… an interesting result. I find images great for this: being able to inspect at once different images showing different aspects of the data is very helpful to reveal consistencies and inconsistencies both in our data and in our hypotheses.</p>
+<p><strong>Interactive visualization takes this ability one step forward</strong>. Now we can carry out some kind of transformation in one feature of our data - e.g.&nbsp;selecting different groups of variables - and see immediately the effect of this in other aspects of our data.</p>
+<p>In <strong>neuroimaging</strong> - the field where I worked for most time - this can be particularly useful, since the variables associated with both data pre-processing and actual data analysis are so many, that it is of paramount importance to check as much as possible each step of the process. Even restricing our focus to the actual analysis, the complexity associated with our research questions can grow very quickly: are the data from my participants homogeneous? How do they compare between the different tasks presented in the experiment? Is the effect restricted to only specific regions? Or maybe is it more evident when looking at sets (and potentially networks) of brain regions?</p>
+<p><strong>In the following I will present a basic example of how different visualizations of the same data can help to inspect and gain insights on the results of a (fictitious) fMRI experiment</strong>. I hope to show that while exploring even a simple dataset, the complexity of questions that come to the mind grows very fast. This prompts us to go back to the code, modify it, create new code chunks in our notebook for intermediate checks, and so on. This process can become very complex and - frankly - very messy.</p>
+<p>At this point, we might think about creating a device that allows us to look at all the different questions we have generated, and see how they affect the representation that we are creating in our mind about the data. <strong>Therefore, I will show an interactive version of it, where the different tables and plots we generated react when something is changed in one of them (e.g.&nbsp;selecting different brain regions)</strong>.</p>
+<p>Not necessarily exploring data will prompt us to create an interactive app all the time, however its utility might become apparent for instance if we realize that such exploration steps might be useful for similar datasets in the future.</p>
+<section id="github-repos" class="level3">
+<h3 class="anchored" data-anchor-id="github-repos">Github repos</h3>
+<ul>
+<li><a href="https://github.com/leonardocerliani/psaraki-blog/blob/main/apps/dimred_app/dimred_app.Rmd" target="_blank">for this RMarkdown document</a></li>
+<li><a href="https://github.com/leonardocerliani/neuroimaging_dimred" target="_blank">for the interactive Shiny app</a> - which can be opened in full page on <a href="https://agronomous.shinyapps.io/neuroimaging_dimred/" target="_blank">shinyapps.io</a></li>
+</ul>
+<p><em>Caveat: the data in this example are totally made up, they do not come from an actual experiement, since the aim is to show the potential of building such a tool. However, this machinery can be easily adapted to real data and personalized to the need of the investigator.</em></p>
+</section>
+<section id="a-simple-fmri-experiment" class="level2">
+<h2 class="anchored" data-anchor-id="a-simple-fmri-experiment">A simple fMRI experiment</h2>
+<p>Suppose you want to compare brain activity during the execution of three different tasks: <code>AAA</code>, <code>BBB</code> and <code>CCC</code>. These tasks are behaviourally different, and your hypothesis is that this is reflected in which brain regions are recruited to perform each task. To test this hypothesis you set up an fMRI experiment where 30 participants execute many times each task while being in the scanner (this is an <em>extremely</em> simplified description of an fMRI experiment). The brain activity is recorded in each brain region, but for simplicity here we will focus only on nine of them.</p>
+<p>For the purpose of showing the utility of our visual exploration of the data, we will generate fictitious data which is in accordance with the hypothesis. Specifically, I will generate summary statistics (mean activity) from 30 participants, showing that some brain regions are more active in task <code>AAA</code> and some in task <code>CCC</code>, while all examined brain regions do not appear to be particularly activated by task <code>BBB</code>.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>N <span class="ot">=</span> <span class="dv">30</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>A <span class="ot">&lt;-</span> <span class="cf">function</span>(mu) <span class="fu">rnorm</span>(N, <span class="at">mean =</span> mu)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a> <span class="at">task =</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">"AAA"</span>,N), <span class="fu">rep</span>(<span class="st">"BBB"</span>,N), <span class="fu">rep</span>(<span class="st">"CCC"</span>,N)) <span class="sc">%&gt;%</span> <span class="fu">as.factor</span>(),</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">BA44  =</span> <span class="fu">c</span>(<span class="fu">A</span>(<span class="dv">2</span>), <span class="fu">A</span>(<span class="dv">2</span>), <span class="fu">A</span>(<span class="dv">5</span>)),</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">BA45 =</span> <span class="fu">c</span>(<span class="fu">A</span>(<span class="dv">2</span>), <span class="fu">A</span>(<span class="dv">2</span>), <span class="fu">A</span>(<span class="dv">5</span>)),</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">BA46  =</span> <span class="fu">c</span>(<span class="fu">A</span>(<span class="dv">2</span>), <span class="fu">A</span>(<span class="dv">3</span>), <span class="fu">A</span>(<span class="dv">5</span>)),</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">V1  =</span> <span class="fu">c</span>(<span class="fu">A</span>(<span class="dv">2</span>), <span class="fu">A</span>(<span class="dv">2</span>), <span class="fu">A</span>(<span class="dv">2</span>)),</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">V4  =</span> <span class="fu">c</span>(<span class="fu">A</span>(<span class="dv">2</span>), <span class="fu">A</span>(<span class="dv">2</span>), <span class="fu">A</span>(<span class="dv">2</span>)),</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">V5  =</span> <span class="fu">c</span>(<span class="fu">A</span>(<span class="dv">2</span>), <span class="fu">A</span>(<span class="dv">2</span>), <span class="fu">A</span>(<span class="dv">2</span>)),</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">SI   =</span> <span class="fu">c</span>(<span class="fu">A</span>(<span class="dv">5</span>), <span class="fu">A</span>(<span class="dv">2</span>), <span class="fu">A</span>(<span class="dv">2</span>)),</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">SPL  =</span> <span class="fu">c</span>(<span class="fu">A</span>(<span class="dv">5</span>), <span class="fu">A</span>(<span class="dv">2</span>), <span class="fu">A</span>(<span class="dv">2</span>)),</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">IPL  =</span> <span class="fu">c</span>(<span class="fu">A</span>(<span class="dv">5</span>), <span class="fu">A</span>(<span class="dv">3</span>), <span class="fu">A</span>(<span class="dv">2</span>))</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a> <span class="fu">group_by</span>(task) <span class="sc">%&gt;%</span>    <span class="co"># assign participant numbers</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a> <span class="co"># mutate(sub = paste0("sub_",row_number())) %&gt;%</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a> <span class="fu">mutate</span>(<span class="at">sub =</span> <span class="fu">paste0</span>(<span class="st">"sub_"</span>,<span class="fu">row_number</span>(),<span class="st">"_"</span>,task)) <span class="sc">%&gt;%</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a> <span class="fu">relocate</span>(sub) <span class="sc">%&gt;%</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a> <span class="fu">ungroup</span>()</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="co"># # plant an outlier</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="co"># df[c(30,60,90),] %&lt;&gt;%  mutate(across(BA44:IPL, ~ .x + 4))</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="co"># define a reusable function to print the table</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>show_table <span class="ot">&lt;-</span> <span class="cf">function</span>(df) {</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a> BuYlRd <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>   <span class="fu">rgb</span>(<span class="fu">colorRamp</span>(<span class="fu">c</span>(<span class="st">"#7fb7d7"</span>, <span class="st">"#ffffbf"</span>, <span class="st">"#fc8d59"</span>))(x), <span class="at">maxColorValue =</span> <span class="dv">255</span>)</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a> }</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">reactable</span>(</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>    df,</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>   <span class="at">resizable =</span> T,</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>   <span class="co"># selection = "multiple",</span></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>   <span class="co"># onClick = "select",</span></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>   <span class="at">defaultColDef =</span> <span class="fu">colDef</span>(</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>     <span class="at">style =</span> <span class="cf">function</span>(value) {</span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>        vals <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="fu">where</span>(is.numeric))</span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.numeric</span>(value)) <span class="fu">return</span>()</span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>        normalized <span class="ot">&lt;-</span> (value <span class="sc">-</span> <span class="fu">min</span>(vals)) <span class="sc">/</span> (<span class="fu">max</span>(vals) <span class="sc">-</span> <span class="fu">min</span>(vals))</span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>        color <span class="ot">&lt;-</span> <span class="fu">BuYlRd</span>(normalized)</span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>        <span class="fu">list</span>(<span class="at">background =</span> color)</span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>      },</span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>     <span class="at">format =</span> <span class="fu">colFormat</span>(<span class="at">digits =</span> <span class="dv">2</span>), <span class="at">minWidth =</span> <span class="dv">50</span></span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>   ),</span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a>   <span class="at">style =</span> <span class="fu">list</span>(<span class="at">fontFamily =</span> <span class="st">"Arial narrow"</span>, <span class="at">fontSize =</span> <span class="st">"13px"</span>)</span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a>df <span class="sc">%&gt;%</span> <span class="fu">show_table</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+
+<div class="reactable html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-433f6bb486e7b4c17acf" style="width:auto;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-433f6bb486e7b4c17acf">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"sub":["sub_1_AAA","sub_2_AAA","sub_3_AAA","sub_4_AAA","sub_5_AAA","sub_6_AAA","sub_7_AAA","sub_8_AAA","sub_9_AAA","sub_10_AAA","sub_11_AAA","sub_12_AAA","sub_13_AAA","sub_14_AAA","sub_15_AAA","sub_16_AAA","sub_17_AAA","sub_18_AAA","sub_19_AAA","sub_20_AAA","sub_21_AAA","sub_22_AAA","sub_23_AAA","sub_24_AAA","sub_25_AAA","sub_26_AAA","sub_27_AAA","sub_28_AAA","sub_29_AAA","sub_30_AAA","sub_1_BBB","sub_2_BBB","sub_3_BBB","sub_4_BBB","sub_5_BBB","sub_6_BBB","sub_7_BBB","sub_8_BBB","sub_9_BBB","sub_10_BBB","sub_11_BBB","sub_12_BBB","sub_13_BBB","sub_14_BBB","sub_15_BBB","sub_16_BBB","sub_17_BBB","sub_18_BBB","sub_19_BBB","sub_20_BBB","sub_21_BBB","sub_22_BBB","sub_23_BBB","sub_24_BBB","sub_25_BBB","sub_26_BBB","sub_27_BBB","sub_28_BBB","sub_29_BBB","sub_30_BBB","sub_1_CCC","sub_2_CCC","sub_3_CCC","sub_4_CCC","sub_5_CCC","sub_6_CCC","sub_7_CCC","sub_8_CCC","sub_9_CCC","sub_10_CCC","sub_11_CCC","sub_12_CCC","sub_13_CCC","sub_14_CCC","sub_15_CCC","sub_16_CCC","sub_17_CCC","sub_18_CCC","sub_19_CCC","sub_20_CCC","sub_21_CCC","sub_22_CCC","sub_23_CCC","sub_24_CCC","sub_25_CCC","sub_26_CCC","sub_27_CCC","sub_28_CCC","sub_29_CCC","sub_30_CCC"],"task":["AAA","AAA","AAA","AAA","AAA","AAA","AAA","AAA","AAA","AAA","AAA","AAA","AAA","AAA","AAA","AAA","AAA","AAA","AAA","AAA","AAA","AAA","AAA","AAA","AAA","AAA","AAA","AAA","AAA","AAA","BBB","BBB","BBB","BBB","BBB","BBB","BBB","BBB","BBB","BBB","BBB","BBB","BBB","BBB","BBB","BBB","BBB","BBB","BBB","BBB","BBB","BBB","BBB","BBB","BBB","BBB","BBB","BBB","BBB","BBB","CCC","CCC","CCC","CCC","CCC","CCC","CCC","CCC","CCC","CCC","CCC","CCC","CCC","CCC","CCC","CCC","CCC","CCC","CCC","CCC","CCC","CCC","CCC","CCC","CCC","CCC","CCC","CCC","CCC","CCC"],"BA44":[0.61492938140562,2.0383231810219,1.23696983763803,2.21230613552584,3.42553796686779,2.74447982233398,2.70022940298623,1.77064538654827,2.19709386189535,3.20715377387226,2.31833672642477,0.576201146372445,1.59490914195081,2.99538656568402,2.95881778764026,2.91808789631995,1.84903039811839,0.776931211133796,1.13117571136221,0.957514635095707,0.89636221693313,2.44418506163659,1.79504938775228,3.67563243314833,1.86867775006957,1.80011702206881,2.05491241543212,1.31783451145483,1.27229585185734,1.13809571405966,1.96247688500596,0.368576759763806,2.17716659588745,1.98749920092182,1.6056828735741,2.351562931221,2.87876756271992,2.20465408023059,1.11261928960827,1.52278394170545,1.73225904664531,3.58585916315174,2.04690059469796,2.35649677724496,1.87861999467963,1.9639081579006,1.01885251327321,1.56574017234708,1.93251564470826,2.98189456596395,1.53794760870501,1.77490071735602,1.15355219973811,2.07304631935885,1.72496358045385,1.61357364274198,1.95379685855967,1.17410627816362,1.1459657622543,2.11873680940266,5.28359690551731,6.93008646624827,3.85947238195217,3.67788175713358,6.228831605395,4.45154396764413,4.87399250786575,5.68771872163121,5.7052003759715,5.80147842909087,4.53711682083636,4.11544501589918,3.36907242657997,5.56223058791966,4.67410816537338,5.24137562009856,6.08586909945727,6.90706161466008,5.81292744930186,5.49488878711318,4.90485223648262,6.1387804995013,5.50231462886191,4.48458594597507,2.53160953291529,4.12744725627407,5.96408807989525,5.91079624870782,6.92580883744669,4.69709305207871],"BA45":[0.945292949887301,2.4181160851839,2.70127282193262,2.24675828235184,2.46429516138673,1.60453181229899,2.71307030515475,3.18501255632763,0.0888507118965616,3.11493056406232,1.53069979374733,0.851997246608669,3.10399795665775,1.71075008304812,1.72267137899047,1.1242173611943,2.00327915181439,2.26559162537504,1.87597586834284,1.87107409441337,2.29911231406166,2.01829921182266,0.849938669161834,1.57060365297092,2.85000297667822,1.78517050815663,1.38258598394646,2.10942738403417,1.29348893608168,3.54297581655436,2.35080172017373,3.17262057409572,1.96662646948847,2.36144399565625,3.04557563850189,2.1032123924156,2.33179555764504,0.43144118526109,2.44026994419263,3.88187132232449,3.34910626519163,0.364917228422103,1.28446726782753,1.08350567711857,-0.361026944675143,3.52845000149248,1.37021277614452,0.931907978582351,3.24485982420613,2.45987614606552,2.16770582831924,1.72499697739086,2.49232261804539,3.33975457108875,1.52325577569802,0.503204463451997,0.798576029350947,1.59253897179244,1.05225190465432,2.85166639841016,4.41156899082457,3.6375268963006,4.55036205776871,4.35667496848077,4.48925444823285,5.25720201112263,4.58044455208535,4.04777234473274,5.512393405085,3.25573231490763,4.50248758843634,5.76558578134751,5.50139306743979,5.33191117093749,4.90892426639287,4.34331796713897,3.83915186135161,6.65593193397773,4.25078945235422,5.62192055512935,3.52819483110537,5.79819545683374,5.27946250904833,5.65787425900688,5.59372632342836,4.42207348648561,5.47606273428365,3.81236638147877,5.71768804534525,5.13469724498278],"BA46":[3.42208034009973,2.04073091317465,1.6615902490414,1.44188461189094,3.02781348318761,1.77452952144058,0.768369948992151,1.24175525867542,3.08551814859004,0.950901115040758,2.29039955258506,1.55242657374964,1.78113923356898,0.394556487532307,2.07483968586426,1.47808130061562,1.93509763101512,3.05136996816088,0.257841736620913,3.73254802805349,3.63352914663053,1.62335030199305,1.83376178224289,1.96784772011729,2.5131534619537,3.26822734484578,0.939717349120485,2.61966262290034,1.18037180024241,1.51225736117761,2.90891456076986,3.30792734910432,2.62511602587807,2.21214332085403,1.98366047806568,0.374981162702059,2.77016789073961,2.7340826410617,3.36381674640279,3.1156862611132,3.75730661713161,4.51531286900488,0.340216147265433,2.31181996028648,2.5734213523264,2.57379455730205,3.14830327616156,5.52780944256064,2.85659991204845,4.03306764284246,2.64213510672995,3.75772181416416,5.29874269671025,2.92442990458078,5.86124846268148,1.59120996978082,3.07643775943218,1.2267909017365,2.78947191166662,2.69621236002842,4.38817813732315,4.8595790492821,5.12135744102046,5.73370617613536,7.22609869055111,5.57679199145337,5.16450948886019,5.79489193146142,6.03759635653034,3.54732330414666,5.49416268238971,4.16918018696165,5.80798731117239,5.20941013586235,4.72243180268859,3.53174719468414,5.49732308144318,5.14643759625719,5.64159172431903,5.068976155877,5.01853077002551,4.7295772370002,4.76764434255544,4.05210157669646,5.27373967880809,4.93030296476082,4.55533710479224,5.03876954394501,4.68543594803659,6.87285182233401],"V1":[0.610664488957531,2.69720901165499,0.838070410833876,1.07225878960691,2.29384110122539,2.20547284097334,2.39642192067547,1.8250530076804,1.13395733788431,1.24865158406591,0.340193749764302,-0.463111659642345,2.9973593614489,3.20124216671774,-0.0889742567114031,3.00276919435432,1.79896981331463,2.40365659256117,2.28836508985829,2.00163042858311,1.32768559479091,2.88085196064302,1.38835277642521,0.971129875399307,3.96628841835207,0.728370333193058,2.09305123964543,2.30706149279004,2.00953261301802,1.30463076583193,1.95101286442604,2.89052201351779,4.81043143103148,2.32758991591664,0.955892661900336,1.21004093185319,2.19816069902227,1.84518875020822,1.08403939938017,1.02255982959187,3.55675924414235,1.9392584493765,1.88828350876397,0.85133342893955,3.50620940355952,3.02607943756811,0.9911414539175,2.50801244573113,1.8188848884115,0.793184156627563,2.61308846084341,3.6469811463942,2.41612373559078,2.12011485340919,1.65312855979004,0.342230534382473,3.07714248743375,1.25778593438642,2.17150514740268,2.62521375342177,0.860895514510204,1.48187114664202,4.0388367338994,1.13570311939675,1.18887611017216,2.72984557682961,0.617525858920959,-0.0477866680097723,2.24144373666929,1.35092527022853,0.334566444274747,2.08061761380375,0.934247632509231,2.47842203112296,3.36897479423998,0.127571098467679,2.50478115193193,2.77597969977298,2.84180379548595,2.53484974651864,1.32356897138783,0.550535564766572,2.59555784407134,2.77871685861299,1.82716542691752,2.65708476816013,2.43526096171464,1.36469073646893,3.98420727077717,2.66084648424419],"V4":[1.94083600673686,2.14485118086861,2.06064021009579,0.78290360007636,2.93130705028101,0.148717393397049,2.35014999126978,2.08560910398688,2.36764115387687,2.88016196651828,1.22992518484736,-1.1953135210312,1.06200590610654,2.90270162228407,2.58530145995021,2.0633594195226,3.76994543209716,1.56465532526578,2.52973997246537,2.1017065279881,0.467451063777508,1.89246168985598,2.76233271808041,1.76620644897541,2.71067666574652,1.98897288262161,2.17550508027368,0.966863618424644,4.05246655537952,0.722923894751339,1.69922271106086,2.81701904183822,1.52577306409072,1.98701060580712,1.82413786142774,1.77842384627539,1.41094279061353,2.03627153983708,1.22945696515577,0.0211041576636666,1.88466935955955,2.12923634204782,2.26715894061899,0.607039992181251,1.40960649165067,4.12300964442607,2.07325510528241,1.61284814731498,0.670453482747053,2.34490895035549,0.989959931933801,1.98915955085725,1.13489274999266,1.95658805019902,1.69102188048299,3.46968331066848,2.46592807859088,2.42954675943248,3.40421655762789,1.4535325725405,0.567244669443303,2.37183471154509,2.87091863076572,3.03639078965022,1.8918004564274,0.0305004748098003,0.605164044593134,1.03045754522202,1.75632945162587,3.12055829653455,1.75941394751461,1.47108938010195,0.073534136938693,1.516924455331,3.38615554563427,1.62835389449091,1.46800237377396,3.59731136929965,0.351870295829208,2.53787667674303,2.34767189043973,0.704651764366423,0.625619207985275,2.09682886466117,1.77122342864092,1.4530960283814,1.56332756415081,1.90317238410859,1.47033200326394,1.48088334610305],"V5":[3.4109399168745,1.81915743978413,1.37905059358572,0.521480449422553,1.2400689242085,1.85064019118011,2.37023463863234,1.1745892282459,0.542200134930874,0.250037989117351,2.67224629994368,2.87716958163437,1.65642632405912,4.18590150110836,3.06689558470047,1.68930464122351,1.528572896391,1.79656361004342,2.30566085796877,2.76207755885252,4.1040860525216,0.809506785751675,3.15832052623903,1.64556418333359,3.47849540394242,1.00950379454188,1.22448598066603,3.33432014555805,1.6435123938961,0.534015468669669,1.97721878760941,2.60419926276171,1.15763275807645,1.80184455586191,1.5964045257207,3.13865088826957,1.82949320130052,0.847993435069403,2.31040606685401,0.587946828620476,2.32097298379131,1.26064019957458,2.30040071989406,1.07903251285495,1.69060272939742,0.993018502112216,0.774454215530172,1.15483307406469,2.25008720396328,1.8382261438819,1.47897260871173,1.94602422650864,3.86027817649726,2.16574745276635,2.80269685814072,1.30419485281078,1.12554763402856,1.83047189139252,2.49000799466844,0.567119273198079,1.94555523561917,1.45113648745157,2.32129952414989,1.32928344352877,1.82717269770908,2.08976442407297,1.43472450362142,2.70004926466164,1.91135533571141,1.2574952575489,3.26486261929806,3.78306246572576,0.803004382263897,2.68171929282277,3.52167376368484,1.05476518219432,2.83695788455171,1.51935626212999,3.64008890168785,0.65985309025711,1.33181020597406,2.0778464725009,1.40380828790585,1.45069225152848,2.89925820669554,1.27273207481145,1.34256222052347,1.34334146085121,2.32762022279093,1.61308873162233],"SI":[5.74747735468965,4.14664935198655,4.39375518549076,6.26413955223539,5.54202790884583,5.14783172071863,3.73304943617682,5.45554344836834,3.99999559123101,4.59026508507026,5.123281062951,4.37257038948887,4.56120677858088,3.26650092024784,4.20522622900546,4.11040817057571,5.18449093073868,5.17344339647003,5.50929817798072,4.77649811687251,5.5066784979408,4.26466130737103,4.41704815260072,5.01040601321281,5.3696713236146,4.84399905232373,4.6600431036098,5.90298600241671,4.6471452636059,3.94001532672979,1.89541109680519,1.37272582108182,2.27491585243013,0.831840564441566,0.574439530913073,3.54812935083989,3.31155954538022,1.23111180346964,3.33418527903145,2.67299921695795,3.06325841051273,3.14070019735248,2.14916466741512,2.11073017346289,1.61906873790922,2.01382690321981,2.82671334460389,1.62545336272606,3.09704813549879,2.70133912553213,1.75802723073316,2.49666924659411,1.1052632129282,2.31505264653244,0.979251325228893,1.44474983976413,2.61220217777564,3.13989337126085,3.9037140044699,-0.166223587760685,2.31668821126142,2.76886859422853,0.150040701846396,2.49542009532323,1.19148640507358,2.19442177747808,3.65505207185167,1.88490660327927,2.71575811572956,1.84291974196875,3.00050780305695,2.35426146453299,1.93820295328616,1.52485640032115,2.66516879152271,3.9838167401101,1.85797474977672,1.32977518414133,1.3295472736594,-0.048960146417496,2.73597872360925,1.74691410835043,4.44183791147152,0.785270661650756,4.815657135892,1.99889824315679,3.25554826465439,1.684462764175,2.3767279756231,3.74572563971548],"SPL":[5.58336228961058,3.89460084649776,3.44132548074118,4.79686776971874,5.235604873533,4.98869814479594,5.04053912406003,6.77241674291439,3.64887224354065,3.54987092075106,4.21273865319757,4.80481153163185,4.03820577211662,5.99070041203137,6.44440691424567,5.52024612410219,4.15360069941162,3.62522021386172,5.55093216424273,4.72904821704403,5.19930482658865,5.5223741700627,2.79030755783105,3.46405860449339,4.05172427589051,5.66249227875796,5.02828592822151,3.29647411337111,4.7186744459286,5.43906145907159,1.38916046676325,2.26696194301755,2.33256034074317,1.90109143724448,2.10957780556198,3.15773478454497,2.65638051420297,0.228018725383938,2.01187829340737,3.22455982615565,1.63405178096001,1.66869952868705,1.25955286732926,1.4649402971716,1.89038853551896,1.19603835215119,1.90509880831909,2.60611913152095,1.87573773393818,2.58544951794532,0.966167630322531,3.36796901818918,2.22844966039447,2.66411262893594,3.3722544931166,2.35611505531386,2.39956298714873,3.19139058343357,2.37445987463014,2.36639455824126,3.18054886723298,1.90310773925803,1.07029991880728,0.412860471803569,1.80599635594846,4.01174430670972,3.40804110900226,0.857783497499679,4.17075680444498,0.745111120798924,1.75166931978547,0.29460613480762,1.26313096408394,2.11176017469479,2.53207633621057,2.66076004781267,1.12250233451449,3.25278788729168,1.03161187624268,1.56191272151744,0.536596574378239,-0.795049493341405,1.4009801977482,0.942980717288692,2.08547808332506,-0.429679576731124,3.43196431618411,2.44368635925931,0.0950783900610801,3.06634099025645],"IPL":[6.7321369546753,6.58967887280844,4.31498415745897,5.77351475996114,4.92523581152613,5.20944636448365,5.11732952952584,4.62738094447763,5.75782995825397,5.54137974994652,5.20674903224606,6.08227863278476,4.89117566054071,3.88454260212542,6.51942070930207,4.94340273250355,6.55228068707235,5.28638825418945,4.41559914549957,5.38419613292673,4.90208043831746,5.28614427285747,6.68649629581308,6.00104844643841,5.5698105219981,3.89857069728649,5.18785433108691,5.44495193282854,4.17927048178165,4.24077458023635,3.95050692851061,1.21721406993891,0.504324019327444,2.30578296049221,2.62185824514119,5.00504941142328,3.05417956992097,2.21381754720864,3.17853746689733,1.36531215468853,4.20372197436532,4.07732126428213,3.06900587399606,3.55361046375177,4.23546622528148,2.50705529214721,3.15278186565496,3.47221810701317,3.13396229768241,0.668701983393568,2.17111029758794,2.30758258168321,3.42286901703609,3.8365518984444,2.73427043414683,3.99645652647632,2.6708699608976,1.8338812687976,1.97852208540385,2.65201479106531,2.24984184062407,2.10371851297109,0.693468454366172,3.12276594280311,1.19404100798324,-0.48655101371883,1.07457603210725,0.452297104808934,1.23578330499477,2.13841526233431,1.31288567136334,0.18560738685591,0.284440481435871,0.950817808369758,0.663807256651183,1.49708383779755,1.98942245092639,4.56846252648523,2.0699121229651,0.451233926277951,4.05041227052776,3.32221238351954,1.64067879205896,2.77898959120766,1.28496628357295,1.19657240281565,1.54903937018767,2.51927681044941,1.81300440137599,1.51760951749539]},"columns":[{"id":"sub","name":"sub","type":"character","format":{"cell":{"digits":2},"aggregated":{"digits":2}},"minWidth":50,"style":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]},{"id":"task","name":"task","type":"factor","format":{"cell":{"digits":2},"aggregated":{"digits":2}},"minWidth":50,"style":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]},{"id":"BA44","name":"BA44","type":"numeric","format":{"cell":{"digits":2},"aggregated":{"digits":2}},"minWidth":50,"style":[{"background":"#B6D5CC"},{"background":"#E1EEC4"},{"background":"#C8E0C9"},{"background":"#E6F1C3"},{"background":"#FEF3B5"},{"background":"#F6FAC0"},{"background":"#F5F9C0"},{"background":"#D9E9C6"},{"background":"#E6F1C3"},{"background":"#FEF9BA"},{"background":"#E9F3C2"},{"background":"#B4D5CC"},{"background":"#D3E6C7"},{"background":"#FEFEBF"},{"background":"#FDFEBF"},{"background":"#FCFDBF"},{"background":"#DBEBC5"},{"background":"#BAD8CB"},{"background":"#C5DEC9"},{"background":"#C0DBCA"},{"background":"#BEDACB"},{"background":"#EDF5C2"},{"background":"#D9EAC5"},{"background":"#FEEDAF"},{"background":"#DCEBC5"},{"background":"#DAEAC5"},{"background":"#E1EEC4"},{"background":"#CBE1C8"},{"background":"#CAE1C8"},{"background":"#C5DEC9"},{"background":"#DEECC5"},{"background":"#AED1CE"},{"background":"#E5F0C3"},{"background":"#DFEDC4"},{"background":"#D4E6C7"},{"background":"#EAF3C2"},{"background":"#FAFCBF"},{"background":"#E6F1C3"},{"background":"#C5DEC9"},{"background":"#D1E5C7"},{"background":"#D7E9C6"},{"background":"#FEEFB1"},{"background":"#E1EEC4"},{"background":"#EAF3C2"},{"background":"#DCEBC5"},{"background":"#DFEDC4"},{"background":"#C2DCCA"},{"background":"#D2E6C7"},{"background":"#DEECC5"},{"background":"#FDFEBF"},{"background":"#D2E5C7"},{"background":"#D9E9C6"},{"background":"#C6DFC9"},{"background":"#E2EEC4"},{"background":"#D7E8C6"},{"background":"#D4E7C6"},{"background":"#DEECC5"},{"background":"#C7DFC9"},{"background":"#C6DFC9"},{"background":"#E3EFC4"},{"background":"#FDC188"},{"background":"#FC9560"},{"background":"#FEE8AA"},{"background":"#FEEDAE"},{"background":"#FCA771"},{"background":"#FDD89C"},{"background":"#FDCC91"},{"background":"#FDB67E"},{"background":"#FDB67D"},{"background":"#FDB37B"},{"background":"#FDD59A"},{"background":"#FEE1A4"},{"background":"#FEF5B6"},{"background":"#FDBA81"},{"background":"#FDD296"},{"background":"#FDC289"},{"background":"#FCAB74"},{"background":"#FC9560"},{"background":"#FDB37B"},{"background":"#FDBB82"},{"background":"#FDCB91"},{"background":"#FCAA73"},{"background":"#FDBB82"},{"background":"#FDD79B"},{"background":"#F0F6C1"},{"background":"#FEE0A4"},{"background":"#FCAF77"},{"background":"#FCB078"},{"background":"#FC9560"},{"background":"#FDD196"}]},{"id":"BA45","name":"BA45","type":"numeric","format":{"cell":{"digits":2},"aggregated":{"digits":2}},"minWidth":50,"style":[{"background":"#C0DBCA"},{"background":"#ECF4C2"},{"background":"#F5F9C0"},{"background":"#E7F1C3"},{"background":"#EEF5C2"},{"background":"#D4E6C7"},{"background":"#F5F9C0"},{"background":"#FEFABA"},{"background":"#A6CCCF"},{"background":"#FEFCBC"},{"background":"#D1E5C7"},{"background":"#BDDACB"},{"background":"#FEFCBC"},{"background":"#D7E8C6"},{"background":"#D7E8C6"},{"background":"#C5DEC9"},{"background":"#E0EDC4"},{"background":"#E8F2C3"},{"background":"#DCEBC5"},{"background":"#DCEBC5"},{"background":"#E9F2C3"},{"background":"#E0EDC4"},{"background":"#BDD9CB"},{"background":"#D3E6C7"},{"background":"#F9FCBF"},{"background":"#D9E9C6"},{"background":"#CDE3C8"},{"background":"#E3EFC4"},{"background":"#CAE1C8"},{"background":"#FEF0B2"},{"background":"#EAF3C2"},{"background":"#FEFABB"},{"background":"#DFEDC4"},{"background":"#EBF3C2"},{"background":"#FEFEBE"},{"background":"#E3EFC4"},{"background":"#EAF3C2"},{"background":"#B0D2CD"},{"background":"#EDF5C2"},{"background":"#FEE7AA"},{"background":"#FEF5B6"},{"background":"#AED1CE"},{"background":"#CAE1C8"},{"background":"#C4DDCA"},{"background":"#98C5D2"},{"background":"#FEF1B2"},{"background":"#CCE2C8"},{"background":"#BFDBCA"},{"background":"#FEF8B9"},{"background":"#EEF5C2"},{"background":"#E5F0C3"},{"background":"#D7E8C6"},{"background":"#EFF6C1"},{"background":"#FEF6B7"},{"background":"#D1E5C7"},{"background":"#B2D4CD"},{"background":"#BBD9CB"},{"background":"#D3E6C7"},{"background":"#C3DDCA"},{"background":"#FAFCBF"},{"background":"#FED99D"},{"background":"#FEEEAF"},{"background":"#FDD599"},{"background":"#FEDA9E"},{"background":"#FDD79B"},{"background":"#FDC288"},{"background":"#FDD499"},{"background":"#FEE3A5"},{"background":"#FDBB82"},{"background":"#FEF8B9"},{"background":"#FDD69A"},{"background":"#FDB47C"},{"background":"#FDBB82"},{"background":"#FDC086"},{"background":"#FDCB91"},{"background":"#FEDB9E"},{"background":"#FEE8AB"},{"background":"#FC9C66"},{"background":"#FEDDA1"},{"background":"#FDB87F"},{"background":"#FEF1B2"},{"background":"#FDB37B"},{"background":"#FDC188"},{"background":"#FDB77E"},{"background":"#FDB980"},{"background":"#FDD89C"},{"background":"#FDBC83"},{"background":"#FEE9AB"},{"background":"#FDB57D"},{"background":"#FDC58B"}]},{"id":"BA46","name":"BA46","type":"numeric","format":{"cell":{"digits":2},"aggregated":{"digits":2}},"minWidth":50,"style":[{"background":"#FEF3B5"},{"background":"#E1EEC4"},{"background":"#D5E7C6"},{"background":"#CFE4C7"},{"background":"#FEFEBE"},{"background":"#D9E9C6"},{"background":"#BAD8CB"},{"background":"#C9E0C9"},{"background":"#FEFDBD"},{"background":"#C0DBCA"},{"background":"#E8F2C3"},{"background":"#D2E5C7"},{"background":"#D9E9C6"},{"background":"#AFD2CD"},{"background":"#E2EEC4"},{"background":"#D0E4C7"},{"background":"#DEECC5"},{"background":"#FEFEBE"},{"background":"#ABCFCE"},{"background":"#FEEBAD"},{"background":"#FEEEB0"},{"background":"#D4E7C6"},{"background":"#DBEAC5"},{"background":"#DFEDC4"},{"background":"#EFF6C1"},{"background":"#FEF8B8"},{"background":"#BFDBCA"},{"background":"#F2F8C1"},{"background":"#C7DFC9"},{"background":"#D1E5C7"},{"background":"#FBFDBF"},{"background":"#FEF7B7"},{"background":"#F3F8C1"},{"background":"#E6F1C3"},{"background":"#DFEDC4"},{"background":"#AED1CE"},{"background":"#F7FAC0"},{"background":"#F6FAC0"},{"background":"#FEF5B6"},{"background":"#FEFCBC"},{"background":"#FEEAAD"},{"background":"#FDD69A"},{"background":"#ADD1CE"},{"background":"#E9F2C3"},{"background":"#F1F7C1"},{"background":"#F1F7C1"},{"background":"#FEFBBB"},{"background":"#FDBA82"},{"background":"#FAFCBF"},{"background":"#FEE3A6"},{"background":"#F3F8C1"},{"background":"#FEEAAD"},{"background":"#FDC187"},{"background":"#FCFDBF"},{"background":"#FCB17A"},{"background":"#D3E6C7"},{"background":"#FEFDBD"},{"background":"#C8E0C9"},{"background":"#F8FBC0"},{"background":"#F5F9C0"},{"background":"#FED99D"},{"background":"#FDCD92"},{"background":"#FDC58B"},{"background":"#FDB57D"},{"background":"#FC8D59"},{"background":"#FDB980"},{"background":"#FDC48A"},{"background":"#FDB37B"},{"background":"#FCAD75"},{"background":"#FEF0B2"},{"background":"#FDBB82"},{"background":"#FEDFA3"},{"background":"#FDB37B"},{"background":"#FDC389"},{"background":"#FDD095"},{"background":"#FEF1B2"},{"background":"#FDBB82"},{"background":"#FDC58B"},{"background":"#FDB77F"},{"background":"#FDC78D"},{"background":"#FDC88E"},{"background":"#FDD095"},{"background":"#FDCF94"},{"background":"#FEE2A5"},{"background":"#FDC188"},{"background":"#FDCB90"},{"background":"#FDD599"},{"background":"#FDC88D"},{"background":"#FDD196"},{"background":"#FC9661"}]},{"id":"V1","name":"V1","type":"numeric","format":{"cell":{"digits":2},"aggregated":{"digits":2}},"minWidth":50,"style":[{"background":"#B5D5CC"},{"background":"#F5F9C0"},{"background":"#BCD9CB"},{"background":"#C3DDCA"},{"background":"#E9F2C3"},{"background":"#E6F1C3"},{"background":"#ECF4C2"},{"background":"#DAEAC5"},{"background":"#C5DEC9"},{"background":"#C9E0C9"},{"background":"#ADD1CE"},{"background":"#95C3D2"},{"background":"#FEFEBF"},{"background":"#FEF9BA"},{"background":"#A0C9D0"},{"background":"#FEFEBF"},{"background":"#DAEAC5"},{"background":"#ECF4C2"},{"background":"#E8F2C3"},{"background":"#E0EDC4"},{"background":"#CBE2C8"},{"background":"#FAFCBF"},{"background":"#CDE3C8"},{"background":"#C0DCCA"},{"background":"#FEE5A7"},{"background":"#B9D7CC"},{"background":"#E2EFC4"},{"background":"#E9F2C3"},{"background":"#E0EDC4"},{"background":"#CAE1C8"},{"background":"#DEECC5"},{"background":"#FBFCBF"},{"background":"#FDCE93"},{"background":"#EAF3C2"},{"background":"#C0DBCA"},{"background":"#C8E0C9"},{"background":"#E6F1C3"},{"background":"#DBEAC5"},{"background":"#C4DDCA"},{"background":"#C2DCCA"},{"background":"#FEF0B1"},{"background":"#DEECC5"},{"background":"#DCEBC5"},{"background":"#BDD9CB"},{"background":"#FEF1B3"},{"background":"#FEFEBE"},{"background":"#C1DCCA"},{"background":"#EFF6C1"},{"background":"#DAEAC5"},{"background":"#BBD9CB"},{"background":"#F2F8C1"},{"background":"#FEEDAF"},{"background":"#ECF4C2"},{"background":"#E3EFC4"},{"background":"#D5E7C6"},{"background":"#ADD1CE"},{"background":"#FEFDBD"},{"background":"#C9E0C9"},{"background":"#E5F0C3"},{"background":"#F3F8C1"},{"background":"#BDDACB"},{"background":"#D0E4C7"},{"background":"#FEE3A6"},{"background":"#C5DEC9"},{"background":"#C7DFC9"},{"background":"#F6FAC0"},{"background":"#B6D5CC"},{"background":"#A1CAD0"},{"background":"#E7F1C3"},{"background":"#CCE2C8"},{"background":"#ADD1CE"},{"background":"#E2EFC4"},{"background":"#BFDBCA"},{"background":"#EEF5C2"},{"background":"#FEF5B6"},{"background":"#A7CDCF"},{"background":"#EFF6C1"},{"background":"#F7FAC0"},{"background":"#F9FCBF"},{"background":"#F0F6C1"},{"background":"#CBE2C8"},{"background":"#B4D4CD"},{"background":"#F2F7C1"},{"background":"#F7FAC0"},{"background":"#DAEAC5"},{"background":"#F4F8C1"},{"background":"#EDF5C2"},{"background":"#CCE2C8"},{"background":"#FEE4A7"},{"background":"#F4F8C1"}]},{"id":"V4","name":"V4","type":"numeric","format":{"cell":{"digits":2},"aggregated":{"digits":2}},"minWidth":50,"style":[{"background":"#DEECC5"},{"background":"#E4F0C3"},{"background":"#E1EEC4"},{"background":"#BBD8CB"},{"background":"#FCFDBF"},{"background":"#A7CDCF"},{"background":"#EAF3C2"},{"background":"#E2EFC4"},{"background":"#EBF3C2"},{"background":"#FAFCBF"},{"background":"#C8E0C9"},{"background":"#7FB7D7"},{"background":"#C3DDCA"},{"background":"#FBFDBF"},{"background":"#F1F7C1"},{"background":"#E2EEC4"},{"background":"#FEEAAC"},{"background":"#D2E6C7"},{"background":"#F0F6C1"},{"background":"#E3EFC4"},{"background":"#B1D3CD"},{"background":"#DCEBC5"},{"background":"#F7FAC0"},{"background":"#D9E9C6"},{"background":"#F5F9C0"},{"background":"#DFEDC4"},{"background":"#E5F0C3"},{"background":"#C0DBCA"},{"background":"#FEE2A5"},{"background":"#B9D7CC"},{"background":"#D6E8C6"},{"background":"#F8FBC0"},{"background":"#D1E5C7"},{"background":"#DFEDC4"},{"background":"#DAEAC5"},{"background":"#D9E9C6"},{"background":"#CEE3C8"},{"background":"#E1EEC4"},{"background":"#C8E0C9"},{"background":"#A3CBD0"},{"background":"#DCEBC5"},{"background":"#E4EFC4"},{"background":"#E8F2C3"},{"background":"#B5D5CC"},{"background":"#CEE3C8"},{"background":"#FEE1A4"},{"background":"#E2EEC4"},{"background":"#D4E7C6"},{"background":"#B7D6CC"},{"background":"#EAF3C2"},{"background":"#C1DCCA"},{"background":"#DFEDC4"},{"background":"#C5DEC9"},{"background":"#DEECC5"},{"background":"#D6E8C6"},{"background":"#FEF2B3"},{"background":"#EEF5C2"},{"background":"#EDF4C2"},{"background":"#FEF4B5"},{"background":"#CFE4C7"},{"background":"#B4D5CC"},{"background":"#EBF3C2"},{"background":"#FAFCBF"},{"background":"#FEFEBE"},{"background":"#DCEBC5"},{"background":"#A4CBD0"},{"background":"#B5D5CC"},{"background":"#C2DDCA"},{"background":"#D8E9C6"},{"background":"#FEFCBC"},{"background":"#D8E9C6"},{"background":"#D0E4C7"},{"background":"#A5CCCF"},{"background":"#D1E5C7"},{"background":"#FEF4B6"},{"background":"#D4E7C6"},{"background":"#CFE4C7"},{"background":"#FEEFB0"},{"background":"#AED1CE"},{"background":"#F0F6C1"},{"background":"#EAF3C2"},{"background":"#B8D7CC"},{"background":"#B6D6CC"},{"background":"#E3EFC4"},{"background":"#D9E9C6"},{"background":"#CFE4C7"},{"background":"#D2E6C7"},{"background":"#DDEBC5"},{"background":"#D0E4C7"},{"background":"#D0E4C7"}]},{"id":"V5","name":"V5","type":"numeric","format":{"cell":{"digits":2},"aggregated":{"digits":2}},"minWidth":50,"style":[{"background":"#FEF4B5"},{"background":"#DAEAC5"},{"background":"#CDE3C8"},{"background":"#B3D4CD"},{"background":"#C9E0C9"},{"background":"#DBEBC5"},{"background":"#EBF3C2"},{"background":"#C7DFC9"},{"background":"#B3D4CD"},{"background":"#AACFCE"},{"background":"#F4F9C0"},{"background":"#FAFCBF"},{"background":"#D5E7C6"},{"background":"#FEDFA2"},{"background":"#FEFDBD"},{"background":"#D6E8C6"},{"background":"#D1E5C7"},{"background":"#D9EAC5"},{"background":"#E9F2C3"},{"background":"#F7FAC0"},{"background":"#FEE1A4"},{"background":"#BBD9CB"},{"background":"#FEFBBB"},{"background":"#D5E7C6"},{"background":"#FEF2B3"},{"background":"#C2DCCA"},{"background":"#C8E0C9"},{"background":"#FEF6B7"},{"background":"#D5E7C6"},{"background":"#B3D4CD"},{"background":"#DFEDC4"},{"background":"#F2F7C1"},{"background":"#C6DFC9"},{"background":"#DAEAC5"},{"background":"#D3E6C7"},{"background":"#FEFBBC"},{"background":"#DAEAC5"},{"background":"#BDD9CB"},{"background":"#E9F2C3"},{"background":"#B5D5CC"},{"background":"#E9F3C2"},{"background":"#C9E0C9"},{"background":"#E9F2C3"},{"background":"#C4DDCA"},{"background":"#D6E8C6"},{"background":"#C1DCCA"},{"background":"#BAD8CB"},{"background":"#C6DFC9"},{"background":"#E7F1C3"},{"background":"#DBEAC5"},{"background":"#D0E4C7"},{"background":"#DEECC5"},{"background":"#FEE8AA"},{"background":"#E5F0C3"},{"background":"#F8FBC0"},{"background":"#CAE1C8"},{"background":"#C5DEC9"},{"background":"#DAEAC5"},{"background":"#EFF6C1"},{"background":"#B4D5CC"},{"background":"#DEECC5"},{"background":"#CFE4C7"},{"background":"#E9F3C2"},{"background":"#CBE2C8"},{"background":"#DAEAC5"},{"background":"#E2EFC4"},{"background":"#CEE3C8"},{"background":"#F5F9C0"},{"background":"#DDECC5"},{"background":"#C9E0C9"},{"background":"#FEF8B8"},{"background":"#FEEAAC"},{"background":"#BBD9CB"},{"background":"#F4F9C0"},{"background":"#FEF1B2"},{"background":"#C3DDCA"},{"background":"#F9FBC0"},{"background":"#D1E5C7"},{"background":"#FEEEAF"},{"background":"#B7D6CC"},{"background":"#CBE2C8"},{"background":"#E2EEC4"},{"background":"#CEE3C8"},{"background":"#CFE4C7"},{"background":"#FBFDBF"},{"background":"#CAE1C8"},{"background":"#CCE2C8"},{"background":"#CCE2C8"},{"background":"#EAF3C2"},{"background":"#D4E7C6"}]},{"id":"SI","name":"SI","type":"numeric","format":{"cell":{"digits":2},"aggregated":{"digits":2}},"minWidth":50,"style":[{"background":"#FDB57C"},{"background":"#FEE0A3"},{"background":"#FED99D"},{"background":"#FCA770"},{"background":"#FDBA81"},{"background":"#FDC58B"},{"background":"#FEEBAD"},{"background":"#FDBC83"},{"background":"#FEE4A7"},{"background":"#FDD498"},{"background":"#FDC58B"},{"background":"#FEDA9E"},{"background":"#FDD599"},{"background":"#FEF8B8"},{"background":"#FEDEA2"},{"background":"#FEE1A4"},{"background":"#FDC48A"},{"background":"#FDC48A"},{"background":"#FDBB82"},{"background":"#FDCF94"},{"background":"#FDBB82"},{"background":"#FEDDA0"},{"background":"#FED99D"},{"background":"#FDC88E"},{"background":"#FDBF85"},{"background":"#FDCD92"},{"background":"#FDD297"},{"background":"#FCB079"},{"background":"#FDD297"},{"background":"#FEE5A8"},{"background":"#DCEBC5"},{"background":"#CDE2C8"},{"background":"#E8F2C3"},{"background":"#BCD9CB"},{"background":"#B4D5CC"},{"background":"#FEF0B2"},{"background":"#FEF6B7"},{"background":"#C8E0C9"},{"background":"#FEF6B7"},{"background":"#F4F9C0"},{"background":"#FEFDBD"},{"background":"#FEFBBB"},{"background":"#E4F0C3"},{"background":"#E3EFC4"},{"background":"#D4E7C6"},{"background":"#E0EDC4"},{"background":"#F9FBC0"},{"background":"#D4E7C6"},{"background":"#FEFCBD"},{"background":"#F5F9C0"},{"background":"#D8E9C6"},{"background":"#EFF6C1"},{"background":"#C4DEC9"},{"background":"#E9F3C2"},{"background":"#C1DCCA"},{"background":"#CFE4C7"},{"background":"#F2F8C1"},{"background":"#FEFBBB"},{"background":"#FEE6A9"},{"background":"#9EC8D1"},{"background":"#E9F3C2"},{"background":"#F7FAC0"},{"background":"#A7CECF"},{"background":"#EFF6C1"},{"background":"#C7DFC9"},{"background":"#E6F0C3"},{"background":"#FEEDAF"},{"background":"#DCEBC5"},{"background":"#F5F9C0"},{"background":"#DBEAC5"},{"background":"#FEFEBF"},{"background":"#EAF3C2"},{"background":"#DEECC5"},{"background":"#D1E5C7"},{"background":"#F4F9C0"},{"background":"#FEE4A7"},{"background":"#DBEBC5"},{"background":"#CBE2C8"},{"background":"#CBE2C8"},{"background":"#A1CAD0"},{"background":"#F6FAC0"},{"background":"#D8E9C6"},{"background":"#FDD89C"},{"background":"#BBD8CB"},{"background":"#FDCE93"},{"background":"#E0EDC4"},{"background":"#FEF8B9"},{"background":"#D6E8C6"},{"background":"#EBF4C2"},{"background":"#FEEBAD"}]},{"id":"SPL","name":"SPL","type":"numeric","format":{"cell":{"digits":2},"aggregated":{"digits":2}},"minWidth":50,"style":[{"background":"#FDB980"},{"background":"#FEE7A9"},{"background":"#FEF3B4"},{"background":"#FDCE93"},{"background":"#FDC289"},{"background":"#FDC98F"},{"background":"#FDC88D"},{"background":"#FC9963"},{"background":"#FEEDAF"},{"background":"#FEF0B2"},{"background":"#FEDEA1"},{"background":"#FDCE93"},{"background":"#FEE3A6"},{"background":"#FCAE76"},{"background":"#FCA26B"},{"background":"#FDBB82"},{"background":"#FEE0A3"},{"background":"#FEEEB0"},{"background":"#FDBA81"},{"background":"#FDD095"},{"background":"#FDC38A"},{"background":"#FDBB82"},{"background":"#F8FBC0"},{"background":"#FEF2B4"},{"background":"#FEE2A5"},{"background":"#FDB77E"},{"background":"#FDC88E"},{"background":"#FEF7B8"},{"background":"#FDD095"},{"background":"#FDBD84"},{"background":"#CDE3C8"},{"background":"#E8F2C3"},{"background":"#EAF3C2"},{"background":"#DDEBC5"},{"background":"#E3EFC4"},{"background":"#FEFBBB"},{"background":"#F4F8C1"},{"background":"#AACFCE"},{"background":"#E0EDC4"},{"background":"#FEF9B9"},{"background":"#D5E7C6"},{"background":"#D6E7C6"},{"background":"#C9E0C9"},{"background":"#CFE4C7"},{"background":"#DCEBC5"},{"background":"#C7DFC9"},{"background":"#DDECC5"},{"background":"#F2F8C1"},{"background":"#DCEBC5"},{"background":"#F1F7C1"},{"background":"#C0DBCA"},{"background":"#FEF5B6"},{"background":"#E7F1C3"},{"background":"#F4F8C1"},{"background":"#FEF5B6"},{"background":"#EAF3C2"},{"background":"#ECF4C2"},{"background":"#FEFABA"},{"background":"#EBF4C2"},{"background":"#EBF3C2"},{"background":"#FEFABA"},{"background":"#DDEBC5"},{"background":"#C3DDCA"},{"background":"#AFD2CD"},{"background":"#DAEAC5"},{"background":"#FEE4A6"},{"background":"#FEF4B5"},{"background":"#BDDACB"},{"background":"#FEDFA3"},{"background":"#B9D8CB"},{"background":"#D8E9C6"},{"background":"#ACD0CE"},{"background":"#C9E1C8"},{"background":"#E3EFC4"},{"background":"#F0F6C1"},{"background":"#F4F8C1"},{"background":"#C5DEC9"},{"background":"#FEF8B9"},{"background":"#C2DDCA"},{"background":"#D2E6C7"},{"background":"#B3D4CD"},{"background":"#8BBDD4"},{"background":"#CDE3C8"},{"background":"#C0DBCA"},{"background":"#E2EFC4"},{"background":"#96C4D2"},{"background":"#FEF3B4"},{"background":"#EDF5C2"},{"background":"#A6CDCF"},{"background":"#FEFDBD"}]},{"id":"IPL","name":"IPL","type":"numeric","format":{"cell":{"digits":2},"aggregated":{"digits":2}},"minWidth":50,"style":[{"background":"#FC9A64"},{"background":"#FC9E68"},{"background":"#FEDB9F"},{"background":"#FDB47C"},{"background":"#FDCB90"},{"background":"#FDC389"},{"background":"#FDC68C"},{"background":"#FDD397"},{"background":"#FDB47C"},{"background":"#FDBA81"},{"background":"#FDC389"},{"background":"#FCAB74"},{"background":"#FDCC91"},{"background":"#FEE7A9"},{"background":"#FCA06A"},{"background":"#FDCA90"},{"background":"#FC9F69"},{"background":"#FDC187"},{"background":"#FED99D"},{"background":"#FDBE85"},{"background":"#FDCB91"},{"background":"#FDC187"},{"background":"#FC9B66"},{"background":"#FCAE76"},{"background":"#FDB981"},{"background":"#FEE7A9"},{"background":"#FDC48A"},{"background":"#FDBD84"},{"background":"#FEDFA2"},{"background":"#FEDDA1"},{"background":"#FEE5A8"},{"background":"#C8E0C9"},{"background":"#B2D4CD"},{"background":"#E9F2C3"},{"background":"#F3F8C1"},{"background":"#FDC98E"},{"background":"#FEFDBE"},{"background":"#E6F1C3"},{"background":"#FEFABB"},{"background":"#CCE2C8"},{"background":"#FEDEA2"},{"background":"#FEE2A5"},{"background":"#FEFDBD"},{"background":"#FEF0B1"},{"background":"#FEDDA1"},{"background":"#EFF6C1"},{"background":"#FEFBBB"},{"background":"#FEF2B3"},{"background":"#FEFBBC"},{"background":"#B7D6CC"},{"background":"#E5F0C3"},{"background":"#E9F2C3"},{"background":"#FEF3B5"},{"background":"#FEE8AB"},{"background":"#F6FAC0"},{"background":"#FEE4A7"},{"background":"#F4F9C0"},{"background":"#DBEAC5"},{"background":"#DFEDC4"},{"background":"#F3F8C1"},{"background":"#E7F1C3"},{"background":"#E3EFC4"},{"background":"#B8D7CC"},{"background":"#FEFCBC"},{"background":"#C7DFC9"},{"background":"#94C3D2"},{"background":"#C4DDCA"},{"background":"#B1D3CD"},{"background":"#C8E0C9"},{"background":"#E4F0C3"},{"background":"#CBE1C8"},{"background":"#A8CECF"},{"background":"#ABD0CE"},{"background":"#C0DBCA"},{"background":"#B7D6CC"},{"background":"#D0E5C7"},{"background":"#DFEDC4"},{"background":"#FDD499"},{"background":"#E2EEC4"},{"background":"#B1D3CD"},{"background":"#FEE2A5"},{"background":"#FEF6B7"},{"background":"#D5E7C6"},{"background":"#F7FAC0"},{"background":"#CAE1C8"},{"background":"#C7DFC9"},{"background":"#D2E5C7"},{"background":"#EFF6C1"},{"background":"#DAEAC5"},{"background":"#D1E5C7"}]}],"resizable":true,"style":{"fontFamily":"Arial narrow","fontSize":"13px"},"dataKey":"7b15f2ad7c67e8d85e2c79ebb3a78a1b"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<p>This is our complete dataset. It is very simplified (and clean) with respect to a real fMRI dataset, but it shows the many levels at which an fMRI can be examined:</p>
+<ul>
+<li>across participants</li>
+<li>across tasks</li>
+<li>across brain regions</li>
+</ul>
+<p>and of course all the combinations of these levels. For instance we might be interested at the effect of a given task with respect to the other two in a specific brain region or in a specific set of brain regions.</p>
+<p><strong>Here we start to see how quickly the complexity increases for the questions that we might ask even in a simple experiment like this.</strong> (It’s here that the interactive exploration will reveal its potential as we will see later).</p>
+<p>Although in this table I already color-coded brain the mean activity in each region for each task and each subject, it is quite difficult to have a clear view of the results.</p>
+</section>
+<section id="effect-of-task-in-different-brain-regions-across-participants" class="level2">
+<h2 class="anchored" data-anchor-id="effect-of-task-in-different-brain-regions-across-participants">Effect of task in different brain regions across participants</h2>
+<p>At this point we want to check whether the effect we hypothesize is consistent across participants. This is done to achieve a robust estimate of our effect of interest (and of its variability). One basic visualization of this mean result is in the form of a table:</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>df_mean <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span> </span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a> <span class="fu">group_by</span>(task) <span class="sc">%&gt;%</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a> <span class="fu">summarise</span>(</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">across</span>(<span class="fu">where</span>(is.numeric), <span class="sc">~</span> <span class="fu">mean</span>(.x, <span class="at">na.rm =</span> T)),</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">.groups =</span> <span class="st">"drop"</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a> )</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co"># df_mean %&gt;% show_table()</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co"># pivot to group all the brain regions in a variable</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>t_df_mean <span class="ot">&lt;-</span> df_mean <span class="sc">%&gt;%</span> </span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a> <span class="fu">pivot_longer</span>(</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">cols =</span> <span class="sc">!</span>task, <span class="at">names_to =</span> <span class="st">"JU"</span>, <span class="at">values_to =</span> <span class="st">"Zmean"</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a> ) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a> <span class="fu">pivot_wider</span>(</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">names_from =</span> task, <span class="at">values_from =</span> Zmean</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a> )</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>t_df_mean <span class="sc">%&gt;%</span> <span class="fu">show_table</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+
+<div class="reactable html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-ed04e9a0ba07141ea4f3" style="width:auto;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-ed04e9a0ba07141ea4f3">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"JU":["BA44","BA45","BA46","V1","V4","V5","SI","SPL","IPL"],"AAA":[1.94957407782034,1.97479970880478,1.96851175597079,1.75935520146319,1.92709018681634,2.00136763656758,4.79554376170503,4.70649422660886,5.30506508969842],"BBB":[1.85018088426617,1.97960695194442,2.96328497003775,2.10326331756468,1.88120261607601,1.76950398546439,2.16610735290369,2.15502923934311,2.83648521942188],"CCC":[5.18290916746093,4.84135623020152,5.12211904757913,1.92525284315028,1.68295125427919,1.96986467179651,2.29125783201097,1.73091481822986,1.64749305805378]},"columns":[{"id":"JU","name":"JU","type":"character","format":{"cell":{"digits":2},"aggregated":{"digits":2}},"minWidth":50,"style":[null,null,null,null,null,null,null,null,null]},{"id":"AAA","name":"AAA","type":"numeric","format":{"cell":{"digits":2},"aggregated":{"digits":2}},"minWidth":50,"style":[{"background":"#94C2D3"},{"background":"#95C3D2"},{"background":"#95C3D2"},{"background":"#86BBD5"},{"background":"#92C2D3"},{"background":"#97C4D2"},{"background":"#FCAC75"},{"background":"#FCB27A"},{"background":"#FC8D59"}]},{"id":"BBB","name":"BBB","type":"numeric","format":{"cell":{"digits":2},"aggregated":{"digits":2}},"minWidth":50,"style":[{"background":"#8DBED4"},{"background":"#96C4D2"},{"background":"#DBEAC5"},{"background":"#9EC8D1"},{"background":"#8FC0D3"},{"background":"#87BBD5"},{"background":"#A3CBD0"},{"background":"#A2CAD0"},{"background":"#D2E5C7"}]},{"id":"CCC","name":"CCC","type":"numeric","format":{"cell":{"digits":2},"aggregated":{"digits":2}},"minWidth":50,"style":[{"background":"#FC945F"},{"background":"#FCA972"},{"background":"#FC9863"},{"background":"#92C1D3"},{"background":"#81B8D6"},{"background":"#95C3D2"},{"background":"#ACD0CE"},{"background":"#84BAD5"},{"background":"#7FB7D7"}]}],"resizable":true,"style":{"fontFamily":"Arial narrow","fontSize":"13px"},"dataKey":"227cd5588402f2673c0af095b40d7384"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<p><br>
+<br>
+Now the situation appears much more clear than when we looked at the data at the participant level, and indeed reflects how we actually generate the data: tasks <code>CCC</code> and <code>AAA</code> activate mostly the three top and bottom brain regions, respectively, while task <code>BBB</code> does not appear to activate any of the examined brain regions above baseline.</p>
+</section>
+<section id="a-different-visualization" class="level2">
+<h2 class="anchored" data-anchor-id="a-different-visualization">A different visualization</h2>
+<p>Consider however that here we are looking only at 9 brain regions, while in reality - in a whole-brain analysis - we look at least at 50+ regions (e.g.&nbsp;the 52 <a href="https://en.wikipedia.org/wiki/Brodmann_area" target="_blank">Brodmann areas</a>). That is why I prefer to look at the same result with a graphical representation such as the following one.</p>
+<p><em>NB: in the following graph you can select specific tasks by clicking on the legend</em></p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>draw_spiderplot <span class="ot">&lt;-</span> <span class="cf">function</span>(t_df_mean) {</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  p <span class="ot">&lt;-</span> <span class="fu">plot_ly</span>(</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">'scatterpolar'</span>, <span class="at">mode =</span> <span class="st">'lines+markers'</span>, <span class="at">fill =</span> <span class="st">'toself'</span>, <span class="at">opacity =</span> <span class="fl">0.5</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> <span class="fu">config</span>(<span class="at">displayModeBar =</span> F)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  df_vals <span class="ot">&lt;-</span> t_df_mean <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span>JU)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  ticks <span class="ot">&lt;-</span>  t_df_mean<span class="sc">$</span>JU <span class="sc">%&gt;%</span> <span class="fu">as.character</span>()</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  groups <span class="ot">&lt;-</span> df_vals <span class="sc">%&gt;%</span> <span class="fu">colnames</span>()</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (ith_col <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(groups)) {</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    onecol <span class="ot">&lt;-</span> df_vals[,ith_col] <span class="sc">%&gt;%</span> <span class="fu">pull</span>()</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    p <span class="ot">&lt;-</span> p <span class="sc">%&gt;%</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>      <span class="fu">add_trace</span>(</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>        <span class="at">r =</span> <span class="fu">c</span>(onecol, onecol[<span class="dv">1</span>]),</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>        <span class="at">theta =</span> <span class="fu">c</span>(ticks, ticks[<span class="dv">1</span>]),</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>        <span class="at">name =</span> groups[ith_col],</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>        <span class="at">line =</span> <span class="fu">list</span>(</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>          <span class="at">dash =</span> <span class="st">"solid"</span>,</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>          <span class="at">shape =</span> <span class="st">"spline"</span>,</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>          <span class="at">smoothing =</span> <span class="dv">1</span>,</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>          <span class="at">width =</span> <span class="dv">2</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>      ) <span class="sc">%&gt;%</span> <span class="fu">layout</span>(<span class="at">font =</span> <span class="fu">list</span>(<span class="at">family =</span> <span class="st">"arial narrow"</span>))</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(p)</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a><span class="fu">draw_spiderplot</span>(t_df_mean)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div class="plotly html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-dcb8b55171978df35d2e" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-dcb8b55171978df35d2e">{"x":{"visdat":{"d62531e15781":["function () ","plotlyVisDat"]},"cur_data":"d62531e15781","attrs":{"d62531e15781":{"mode":"lines+markers","fill":"toself","opacity":0.5,"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatterpolar"},"d62531e15781.1":{"mode":"lines+markers","fill":"toself","opacity":0.5,"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatterpolar","r":[1.94957407782034,1.97479970880478,1.96851175597079,1.75935520146319,1.92709018681634,2.00136763656758,4.79554376170503,4.70649422660886,5.30506508969842,1.94957407782034],"theta":["BA44","BA45","BA46","V1","V4","V5","SI","SPL","IPL","BA44"],"name":"AAA","line":{"dash":"solid","shape":"spline","smoothing":1,"width":2},"inherit":true},"d62531e15781.2":{"mode":"lines+markers","fill":"toself","opacity":0.5,"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatterpolar","r":[1.85018088426617,1.97960695194442,2.96328497003775,2.10326331756468,1.88120261607601,1.76950398546439,2.16610735290369,2.15502923934311,2.83648521942188,1.85018088426617],"theta":["BA44","BA45","BA46","V1","V4","V5","SI","SPL","IPL","BA44"],"name":"BBB","line":{"dash":"solid","shape":"spline","smoothing":1,"width":2},"inherit":true},"d62531e15781.3":{"mode":"lines+markers","fill":"toself","opacity":0.5,"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatterpolar","r":[5.18290916746093,4.84135623020152,5.12211904757913,1.92525284315028,1.68295125427919,1.96986467179651,2.29125783201097,1.73091481822986,1.64749305805378,5.18290916746093],"theta":["BA44","BA45","BA46","V1","V4","V5","SI","SPL","IPL","BA44"],"name":"CCC","line":{"dash":"solid","shape":"spline","smoothing":1,"width":2},"inherit":true}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"font":{"family":"arial narrow"},"hovermode":"closest","showlegend":true},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false,"displayModeBar":false},"data":[{"fillcolor":"rgba(31,119,180,0.5)","mode":"lines+markers","fill":"toself","opacity":0.5,"type":"scatterpolar","marker":{"color":"rgba(31,119,180,1)","line":{"color":"rgba(31,119,180,1)"}},"line":{"color":"rgba(31,119,180,1)"},"frame":null},{"fillcolor":"rgba(255,127,14,0.5)","mode":"lines+markers","fill":"toself","opacity":0.5,"type":"scatterpolar","r":[1.94957407782034,1.97479970880478,1.96851175597079,1.75935520146319,1.92709018681634,2.00136763656758,4.79554376170503,4.70649422660886,5.30506508969842,1.94957407782034],"theta":["BA44","BA45","BA46","V1","V4","V5","SI","SPL","IPL","BA44"],"name":"AAA","line":{"color":"rgba(255,127,14,1)","dash":"solid","shape":"spline","smoothing":1,"width":2},"marker":{"color":"rgba(255,127,14,1)","line":{"color":"rgba(255,127,14,1)"}},"frame":null},{"fillcolor":"rgba(44,160,44,0.5)","mode":"lines+markers","fill":"toself","opacity":0.5,"type":"scatterpolar","r":[1.85018088426617,1.97960695194442,2.96328497003775,2.10326331756468,1.88120261607601,1.76950398546439,2.16610735290369,2.15502923934311,2.83648521942188,1.85018088426617],"theta":["BA44","BA45","BA46","V1","V4","V5","SI","SPL","IPL","BA44"],"name":"BBB","line":{"color":"rgba(44,160,44,1)","dash":"solid","shape":"spline","smoothing":1,"width":2},"marker":{"color":"rgba(44,160,44,1)","line":{"color":"rgba(44,160,44,1)"}},"frame":null},{"fillcolor":"rgba(214,39,40,0.5)","mode":"lines+markers","fill":"toself","opacity":0.5,"type":"scatterpolar","r":[5.18290916746093,4.84135623020152,5.12211904757913,1.92525284315028,1.68295125427919,1.96986467179651,2.29125783201097,1.73091481822986,1.64749305805378,5.18290916746093],"theta":["BA44","BA45","BA46","V1","V4","V5","SI","SPL","IPL","BA44"],"name":"CCC","line":{"color":"rgba(214,39,40,1)","dash":"solid","shape":"spline","smoothing":1,"width":2},"marker":{"color":"rgba(214,39,40,1)","line":{"color":"rgba(214,39,40,1)"}},"frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+</section>
+<section id="reducing-the-dimensionality-for-a-sharper-view" class="level2">
+<h2 class="anchored" data-anchor-id="reducing-the-dimensionality-for-a-sharper-view">Reducing the dimensionality for a sharper view</h2>
+<p>I find this visualization much easier to inspect than the table above. However, you might have noticed that we don’t know anymore what is going on at the level of the single participants. Of course are insights on the results so far are purely based on descriptive statistics, and appropriate inferential methods (e.g.&nbsp;ANOVA) will tell us whether the variability across tasks is substantially higher than that between participants. However, it can be useful to have a first look into this by looking at the main trajectories of variability across the entire initial dataset.</p>
+<p>Let’s see for instance what happens when we feed our initial participants-by-brain region table into <a href="https://umap-learn.readthedocs.io/en/latest/" target="_blank">UMAP</a>.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>do_dimred <span class="ot">&lt;-</span> <span class="cf">function</span>(df, method, compX, compY, <span class="at">maxcomp=</span><span class="dv">3</span>) {</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># nsub &lt;- length(df$task)</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  vals <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">!</span>task) <span class="sc">%&gt;%</span> <span class="fu">as.matrix</span>()</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">switch</span>(method,</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">mds =</span> {</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>           mds <span class="ot">&lt;-</span> <span class="fu">cmdscale</span>(<span class="fu">dist</span>(vals), <span class="at">eig =</span> T, <span class="at">k =</span> maxcomp)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>           pcs <span class="ot">&lt;-</span> <span class="fu">list</span>(mds<span class="sc">$</span>points[,compX], mds<span class="sc">$</span>points[,compY])</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>         },</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>         <span class="at">umap =</span> {</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>           u <span class="ot">&lt;-</span> <span class="fu">umap</span>(<span class="fu">dist</span>(vals), <span class="at">n_components =</span> maxcomp)</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>           pcs <span class="ot">&lt;-</span> <span class="fu">list</span>(u[,compX], u[,compY])</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>         },</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>         <span class="at">tsne =</span> {</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>           tsne <span class="ot">&lt;-</span> <span class="fu">Rtsne</span>(<span class="fu">dist</span>(vals), <span class="at">dims =</span> <span class="dv">3</span>, <span class="at">perplexity =</span> <span class="dv">10</span>)</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>           pcs <span class="ot">&lt;-</span> <span class="fu">list</span>(tsne<span class="sc">$</span>Y[,compX], tsne<span class="sc">$</span>Y[,compY])</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>         }</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>  )    </span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>  df_lowdim <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">task =</span> df<span class="sc">$</span>task,</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">sub =</span> df<span class="sc">$</span>sub,</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">pc1 =</span> pcs[[<span class="dv">1</span>]],</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">pc2 =</span> pcs[[<span class="dv">2</span>]],</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_ly</span>(<span class="at">type =</span> <span class="st">'scatter'</span>, <span class="at">mode =</span> <span class="st">'markers'</span>, <span class="at">source =</span> <span class="st">"A"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">add_trace</span>(</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>      <span class="at">data =</span> df_lowdim,</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> <span class="sc">~</span>pc1,</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>      <span class="at">y =</span> <span class="sc">~</span>pc2,</span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>      <span class="at">customdata =</span> <span class="sc">~</span>sub,</span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>      <span class="at">color =</span> <span class="sc">~</span>task,</span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>      <span class="at">text =</span> <span class="sc">~</span>sub,</span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>      <span class="at">hoverinfo =</span> <span class="st">'text'</span></span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>      <span class="co"># hovertemplate = paste('%{text}')</span></span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>    <span class="fu">layout</span>(<span class="at">dragmode =</span> <span class="st">"lasso"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>    <span class="fu">config</span>(<span class="at">displayModeBar =</span> F)</span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a><span class="fu">do_dimred</span>(df,<span class="st">"umap"</span>, <span class="at">compX =</span> <span class="dv">1</span>, <span class="at">compY =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div class="plotly html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-d27e298fb4a9785b6276" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-d27e298fb4a9785b6276">{"x":{"visdat":{"d6253f5c4117":["function () ","plotlyVisDat"],"d62541b56d80":["function () ","data"]},"cur_data":"d62541b56d80","attrs":{"d6253f5c4117":{"mode":"markers","alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatter"},"d62541b56d80":{"mode":"markers","alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatter","x":{},"y":{},"customdata":{},"color":{},"text":{},"hoverinfo":"text","inherit":true}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"dragmode":"lasso","xaxis":{"domain":[0,1],"automargin":true,"title":"pc1"},"yaxis":{"domain":[0,1],"automargin":true,"title":"pc2"},"hovermode":"closest","showlegend":true},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false,"displayModeBar":false},"data":[{"mode":"markers","type":"scatter","marker":{"color":"rgba(31,119,180,1)","line":{"color":"rgba(31,119,180,1)"}},"error_y":{"color":"rgba(31,119,180,1)"},"error_x":{"color":"rgba(31,119,180,1)"},"line":{"color":"rgba(31,119,180,1)"},"xaxis":"x","yaxis":"y","frame":null},{"mode":"markers","type":"scatter","x":[-8.72931206292576,-8.35771095818943,-8.58599960870213,-8.34415543145604,-8.22766792840428,-8.29223644799656,-8.40258228845066,-8.37080013818211,-7.89159309930272,-8.01894390649266,-8.28364861077733,-8.43918907708592,-8.67224133080906,-8.38438522881932,-8.46349537438816,-8.45332062310643,-8.18109333581395,-8.81255638665623,-8.49204552239842,-8.72872841424412,-8.66038715905613,-8.10268032617039,-8.08284866876072,-8.08911526269383,-8.61411202020115,-8.59454357690281,-8.48721230096287,-8.65866196221775,-8.53065788812108,-8.46722137994236],"y":[0.804904378785027,0.490701950920953,0.104579604996575,0.0445325745476617,-0.475290022956,-0.219348155127631,-0.658236943350898,-0.479004345999824,0.446581162346734,-0.130751811133491,0.635588086975945,0.688277758492364,0.272971905602349,-0.690544568167792,0.321127809418572,-0.707313738928901,0.0874297989739312,0.581052817238702,-0.615140877829658,0.704678095711602,0.85491541756524,-0.562633477316962,0.563248433007134,0.213628806008233,0.706579126252068,0.0291073693169488,-0.470756970511542,0.757867254151238,-0.433324299918281,-0.12158866988288],"customdata":["sub_1_AAA","sub_2_AAA","sub_3_AAA","sub_4_AAA","sub_5_AAA","sub_6_AAA","sub_7_AAA","sub_8_AAA","sub_9_AAA","sub_10_AAA","sub_11_AAA","sub_12_AAA","sub_13_AAA","sub_14_AAA","sub_15_AAA","sub_16_AAA","sub_17_AAA","sub_18_AAA","sub_19_AAA","sub_20_AAA","sub_21_AAA","sub_22_AAA","sub_23_AAA","sub_24_AAA","sub_25_AAA","sub_26_AAA","sub_27_AAA","sub_28_AAA","sub_29_AAA","sub_30_AAA"],"text":["sub_1_AAA","sub_2_AAA","sub_3_AAA","sub_4_AAA","sub_5_AAA","sub_6_AAA","sub_7_AAA","sub_8_AAA","sub_9_AAA","sub_10_AAA","sub_11_AAA","sub_12_AAA","sub_13_AAA","sub_14_AAA","sub_15_AAA","sub_16_AAA","sub_17_AAA","sub_18_AAA","sub_19_AAA","sub_20_AAA","sub_21_AAA","sub_22_AAA","sub_23_AAA","sub_24_AAA","sub_25_AAA","sub_26_AAA","sub_27_AAA","sub_28_AAA","sub_29_AAA","sub_30_AAA"],"hoverinfo":["text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text"],"name":"AAA","marker":{"color":"rgba(102,194,165,1)","line":{"color":"rgba(102,194,165,1)"}},"textfont":{"color":"rgba(102,194,165,1)"},"error_y":{"color":"rgba(102,194,165,1)"},"error_x":{"color":"rgba(102,194,165,1)"},"line":{"color":"rgba(102,194,165,1)"},"xaxis":"x","yaxis":"y","frame":null},{"mode":"markers","type":"scatter","x":[2.34899282389217,2.85429108076625,2.61387169294887,2.8543840640121,2.80314576559597,-8.13084805077977,1.98901820116573,2.60933709078365,1.99177980356746,2.1044981473022,2.08893096380764,2.27287733488613,2.13818526201778,2.35753631525569,2.32324469023281,2.79961574011379,2.23327839308315,2.20065510206752,2.05795323782497,1.70319360428386,2.51831793718868,2.33304786615902,2.21843111448818,2.21339666777187,2.21742534571224,2.23831212454372,2.2764781706863,1.92507982187801,1.90978538923793,2.73363971643978],"y":[-5.90425439940559,-5.72451969252692,-5.55489154921638,-5.84153505431281,-6.12095924483405,0.266051567925347,-5.90741535292731,-5.78698249922858,-6.11482998000251,-6.3882493601905,-5.98658367262946,-5.03295036421882,-5.44309707747565,-6.0173186884986,-5.28471609221564,-5.85581012831794,-5.85030790434943,-5.15300747023688,-6.24404235945808,-5.90256305800544,-6.16344352828132,-5.47952743636237,-5.23494573699104,-6.11195846663581,-5.23766609297858,-5.69363113509284,-5.42493911849128,-5.44615932570563,-5.47088857756721,-5.95671793089973],"customdata":["sub_1_BBB","sub_2_BBB","sub_3_BBB","sub_4_BBB","sub_5_BBB","sub_6_BBB","sub_7_BBB","sub_8_BBB","sub_9_BBB","sub_10_BBB","sub_11_BBB","sub_12_BBB","sub_13_BBB","sub_14_BBB","sub_15_BBB","sub_16_BBB","sub_17_BBB","sub_18_BBB","sub_19_BBB","sub_20_BBB","sub_21_BBB","sub_22_BBB","sub_23_BBB","sub_24_BBB","sub_25_BBB","sub_26_BBB","sub_27_BBB","sub_28_BBB","sub_29_BBB","sub_30_BBB"],"text":["sub_1_BBB","sub_2_BBB","sub_3_BBB","sub_4_BBB","sub_5_BBB","sub_6_BBB","sub_7_BBB","sub_8_BBB","sub_9_BBB","sub_10_BBB","sub_11_BBB","sub_12_BBB","sub_13_BBB","sub_14_BBB","sub_15_BBB","sub_16_BBB","sub_17_BBB","sub_18_BBB","sub_19_BBB","sub_20_BBB","sub_21_BBB","sub_22_BBB","sub_23_BBB","sub_24_BBB","sub_25_BBB","sub_26_BBB","sub_27_BBB","sub_28_BBB","sub_29_BBB","sub_30_BBB"],"hoverinfo":["text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text"],"name":"BBB","marker":{"color":"rgba(252,141,98,1)","line":{"color":"rgba(252,141,98,1)"}},"textfont":{"color":"rgba(252,141,98,1)"},"error_y":{"color":"rgba(252,141,98,1)"},"error_x":{"color":"rgba(252,141,98,1)"},"line":{"color":"rgba(252,141,98,1)"},"xaxis":"x","yaxis":"y","frame":null},{"mode":"markers","type":"scatter","x":[6.56165826254421,6.1134618514114,6.24699819021755,5.69650685720974,6.28083741598659,7.19420468740993,7.05974471502834,6.44331443243557,7.05823552542263,5.87242829733425,6.78487384253078,6.67625319891506,6.65226638250881,6.66259276800685,6.82427298956447,6.80482470923,6.21561276846462,6.36258685522609,6.27777421408229,6.22199952536159,5.71428477697902,5.85661685400539,6.76210200720363,5.91478860312038,6.91712653570705,6.25247418814235,6.78527533941799,6.17051064901882,6.299697756105,6.93796670370632],"y":[5.9536228550805,5.7801859749688,4.75079516304864,5.32282642258538,5.29491380585564,5.57632593048943,5.83147815598382,5.38243273629083,5.7445676697625,5.68511275185479,5.49249748124017,4.96843246353997,5.2386079205407,5.06013802422417,5.20120266808404,6.09147838486565,5.25051192177667,5.90948871506585,5.16785720719231,4.8687143696679,5.48589209450616,5.23458150757684,5.82018951310052,4.99926165474786,5.55852893723382,4.98802665604485,5.90984681977166,5.7666750325097,5.26804784668816,5.72178057564629],"customdata":["sub_1_CCC","sub_2_CCC","sub_3_CCC","sub_4_CCC","sub_5_CCC","sub_6_CCC","sub_7_CCC","sub_8_CCC","sub_9_CCC","sub_10_CCC","sub_11_CCC","sub_12_CCC","sub_13_CCC","sub_14_CCC","sub_15_CCC","sub_16_CCC","sub_17_CCC","sub_18_CCC","sub_19_CCC","sub_20_CCC","sub_21_CCC","sub_22_CCC","sub_23_CCC","sub_24_CCC","sub_25_CCC","sub_26_CCC","sub_27_CCC","sub_28_CCC","sub_29_CCC","sub_30_CCC"],"text":["sub_1_CCC","sub_2_CCC","sub_3_CCC","sub_4_CCC","sub_5_CCC","sub_6_CCC","sub_7_CCC","sub_8_CCC","sub_9_CCC","sub_10_CCC","sub_11_CCC","sub_12_CCC","sub_13_CCC","sub_14_CCC","sub_15_CCC","sub_16_CCC","sub_17_CCC","sub_18_CCC","sub_19_CCC","sub_20_CCC","sub_21_CCC","sub_22_CCC","sub_23_CCC","sub_24_CCC","sub_25_CCC","sub_26_CCC","sub_27_CCC","sub_28_CCC","sub_29_CCC","sub_30_CCC"],"hoverinfo":["text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text"],"name":"CCC","marker":{"color":"rgba(141,160,203,1)","line":{"color":"rgba(141,160,203,1)"}},"textfont":{"color":"rgba(141,160,203,1)"},"error_y":{"color":"rgba(141,160,203,1)"},"error_x":{"color":"rgba(141,160,203,1)"},"line":{"color":"rgba(141,160,203,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<p><br>
+<br>
+Here each point represents one participant performing one task. The data is grouped in three clusters reflecting - not surprisingly - the difference in brain activity across all particiants and between tasks.</p>
+<p>Interestingly, we see that the brain activity for task <code>BBB</code> in one participant is grouped with a cluster which is mostly populated with activity for task <code>AAA</code> (hover on the orange dot in the green cloud). To inspect this potential anomaly, we can look into the initial data table and inspect the original values. Eventually we can go back to the original fMRI data and - through appropriate examination - decide if something went wrong with the data of this participant, e.g.&nbsp;during data acquisition or pre-processing.</p>
+<p>This situation is made more clear if we artificially “plant” an anomaly in our data. I will not run this here, but you can download this RMarkdown notebook and run it on your computer. Check out how the UMAP is able to spot the “outliers” which were planted in the data.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># plant an outlier</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>gf <span class="ot">&lt;-</span> df</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>gf[<span class="fu">c</span>(<span class="dv">29</span>,<span class="dv">30</span>,<span class="dv">59</span>,<span class="dv">60</span>,<span class="dv">89</span>,<span class="dv">90</span>),] <span class="sc">%&lt;&gt;%</span>  <span class="fu">mutate</span>(<span class="fu">across</span>(BA44<span class="sc">:</span>IPL, <span class="sc">~</span> .x <span class="sc">+</span> <span class="dv">4</span>))</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="fu">do_dimred</span>(gf,<span class="st">"umap"</span>, <span class="at">compX =</span> <span class="dv">1</span>, <span class="at">compY =</span> <span class="dv">2</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>gf <span class="sc">%&gt;%</span> <span class="fu">show_table</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="bringing-all-together-in-an-interactive-app" class="level2">
+<h2 class="anchored" data-anchor-id="bringing-all-together-in-an-interactive-app">Bringing all together in an interactive app</h2>
+<p>We have seen so far how many questions naturally arise even when looking at a intentionally very simplified dataset like the one we generated above.</p>
+<p>If you read so far you have probably come up with a few other features that you would like to explore in one of the proposed visualization, and see how they affect the other perspectives from which we can look at the data.</p>
+<p>It is probably clear by now that I am very intrigued by the possibility of exploration offered by dimensionality reduction methods such as UMAP. In the app which is displayed below, that you can <a href="https://agronomous.shinyapps.io/neuroimaging_dimred/" target="_blank">open in full screen here</a>, I implemented a few other possibilities that I encourage you to explore:</p>
+<ul>
+<li><p>For instance, we might want to assess - for data exploration or based on a specific hypothesis - whether the expected effect would hold if you <strong>consider only a subset of the brain regions</strong> we looked at. This can be done by selecting the regions in the table, and observing the effect in the low-dimensional embedding.</p></li>
+<li><p>We might also want to try to <strong>use other dimensionality reduction methoods</strong> besides UMAP (check for instance <a href="https://cmdlinetips.com/2022/07/dimensionality-reduction-techniques-in-r/" target="_blank">here</a>). In the app, there is a choice of three different methods: Multi-dimensional Scaling (from the <a href="https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/cmdscale" target="_blank">stats</a> package), tSNE (from the <a href="https://cran.r-project.org/web/packages/Rtsne/index.html" target="_blank">Rtsne</a> package) and UMAP (from the <a href="https://cran.r-project.org/web/packages/uwot/index.html" target="_blank">uwot</a> package).</p></li>
+<li><p>Also, to <strong>inspect the original values for each participant in each task</strong>, you just have to draw a lasso around the points you are interested in the low-dimensional embedding, and a heatmap of those values will appear in the lower-right corner of the app</p></li>
+</ul>
+<p>Hopefully the potential usage of the app are self-explanatory, but if in doubt, check the animated gif at the beginning of this post.</p>
+<div class="cell">
+<iframe src="https://agronomous.shinyapps.io/neuroimaging_dimred/?showcase=0" width="672" height="2100" data-external="1">
+</iframe>
+</div>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>This post has already become much bigger than what I expected. I hope you found it useful or at least interesting, and I would be glad to know what you think about it by dropping me an email.</p>
+<p>I just want to offer two small considerations to conclude.</p>
+<ul>
+<li><p>Building an interactive app for data exploration/analysis is something that I dreamt about ever since I started to learn Matlab many years ago. Nowadays with the introduction of libraries such as <a href="https://shiny.rstudio.com/" target="_blank">Shiny</a> for R (and recently also for Python), it has become a task that <strong>anyone with an interest in coding can get started with in a relatively short time</strong>, and that I personally find satisfying on many different levels. When you get a bit of experience, prototyping a basic app can take as short as one or a few days (as a matter of fact it took me way more time to write this post than the app)</p></li>
+<li><p>In this example I looked only at the participant-level results. Instead <strong>in neuroimaging a large amount of time and code is spent on pre-processing the data and checking the results of the many steps involved therein</strong> - e.g.&nbsp;checking the outcome of registering one brain to a template, or the whole-brain temporal profile of an fMRI volume after bandpass filtering or de-noising. Although many neuroimaging suite already did a great job in implementing GUIs, you might want to look into other features which are not currently offered, or you might just want to implement an interface for the pre-processing pipelines you wrote. Having this in mind, I believe that libraries like Shiny bring a great potential for developing such personalized tools for researcher in neuroimaging.</p></li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

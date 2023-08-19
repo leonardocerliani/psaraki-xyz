@@ -1234,6 +1234,3 @@ In this case we can see - from the plots and from the Shapiro test for normality
 
 
 
-
-
-

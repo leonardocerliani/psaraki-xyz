@@ -185,6 +185,9 @@ Then we will also examine the potential correlations between variables. If the l
 
 ## Two-independent-samples t-tests {.tabset}
 
+
+::: {.panel-tabset}
+
 (an excercise in [fitting many models using `purrr::map`](https://www.youtube.com/watch?v=rz3_FDVt9eg))
 ```{r}
 
@@ -318,7 +321,7 @@ train %>%
 
 ```
 
-
+:::
 
 ## Observations - numerical EVs
 
@@ -340,6 +343,8 @@ train %>%
 As before for the numerical variables, we will first assess a dependence between risk of CHD and other categorical variables, and then explore the reciprocal relationships of all categorical variables to assess the presence of collinearity.
 
 ## Chi-square tests {.tabset}
+
+::: {.panel-tabset}
 
 ### Sex (male)
 ```{r}
@@ -440,7 +445,7 @@ ggbarstats(
 )
 ```
 
-
+:::
 
 ## Association matrix (categorical)
 Graphically display the association between binary categorical variables, including `ten_year_chd` to assess the presence of correlated predictors
@@ -486,6 +491,7 @@ There are widespread associations between numerical and categorical variables. T
 
 Despite this, we will enter all the selected variables in the model and assess the presence of collinearity using VIF.
 
+::: {.panel-tabset}
 
 ## age 
 
@@ -560,6 +566,7 @@ grid.arrange(p1, p2, p3, nrow = 1)
 
 ```
 
+:::
 
 
 # NA Assessment  {.tabset}
@@ -577,6 +584,7 @@ In case of imputation, we will apply the same procedure blindly to the test set.
 
 `cigs_per_day` is a variable that can hardly be imputed correctly, therefore we will remove the data points with NA in this variable (less than 1%)
 
+::: {.panel-tabset}
 
 ## bmi
 ```{r}
@@ -700,7 +708,7 @@ test %>%
 ```
 
 
-
+:::
 
 
 # Analytic strategy
@@ -909,6 +917,8 @@ plot_ROC <- function(test_data = test, phat = phat) {
 
 
 ## Manual stepwise {.tabset}
+
+::: {.panel-tabset}
 
 ### Maximal model
 
@@ -1172,7 +1182,7 @@ Code to manually calculate the Confusion Matrix and its derivatives. Values are 
 
 
 
-
+:::
 
 
 

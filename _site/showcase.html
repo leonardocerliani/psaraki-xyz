@@ -70,9 +70,9 @@ ul.task-list li input[type="checkbox"] {
     }
 
     const options = {
-      valueNames: ['listing-date','listing-title','listing-author','listing-subtitle','listing-image','listing-description','listing-categories',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
+      valueNames: ['listing-title','listing-author','listing-date','listing-image','listing-description','listing-categories',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
       
-      searchColumns: ["listing-date","listing-title","listing-author","listing-subtitle","listing-image","listing-description","listing-categories"],
+      searchColumns: ["listing-title","listing-author","listing-date","listing-image","listing-description","listing-categories"],
     };
 
     window['quarto-listings'] = window['quarto-listings'] || {};
@@ -135,7 +135,7 @@ ul.task-list li input[type="checkbox"] {
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         
-    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(3)</span></div><div class="category" data-category="business analytics">business analytics <span class="quarto-category-count">(1)</span></div><div class="category" data-category="neuroimaging">neuroimaging <span class="quarto-category-count">(1)</span></div><div class="category" data-category="shiny app">shiny app <span class="quarto-category-count">(1)</span></div></div></div>
+    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(4)</span></div><div class="category" data-category="business analytics">business analytics <span class="quarto-category-count">(1)</span></div><div class="category" data-category="neuroimaging">neuroimaging <span class="quarto-category-count">(1)</span></div><div class="category" data-category="shiny app">shiny app <span class="quarto-category-count">(1)</span></div></div></div>
 <!-- main -->
 <main class="content column-page-left" id="quarto-document-content">
 
@@ -160,84 +160,98 @@ ul.task-list li input[type="checkbox"] {
 
 
 
-<div class="quarto-listing quarto-listing-container-default" id="listing-listing">
-<div class="list quarto-listing-default">
-<div class="quarto-post image-right" data-index="0" data-categories="business analytics" data-listing-date-sort="1691964000000" data-listing-file-modified-sort="1692372868815" data-listing-reading-time-sort="15.455">
-<div class="thumbnail">
-<p><a href="./showcase/Marketing_Analysis_psaraki/Marketing_Analysis.html"> <img src="./showcase/Marketing_Analysis_psaraki/marketing.jpg" class="thumnail-image"> </a></p>
-</div>
-<div class="body">
-<a href="./showcase/Marketing_Analysis_psaraki/Marketing_Analysis.html">
-<h3 class="no-anchor listing-title">
+<div class="quarto-listing quarto-listing-container-grid" id="listing-listing">
+<div class="list grid quarto-listing-cols-3">
+<div class="g-col-1" data-index="0" data-categories="business analytics" data-listing-date-sort="1691964000000" data-listing-file-modified-sort="1692372868815" data-listing-reading-time-sort="15.455">
+<a href="./showcase/Marketing_Analysis_psaraki/Marketing_Analysis.html" class="quarto-grid-link">
+<div class="quarto-grid-item card h-100 card-left">
+<p class="card-img-top">
+<img src="./showcase/Marketing_Analysis_psaraki/marketing.jpg" class="thumbnail-image card-img" style="height: 150px;">
+</p>
+<div class="card-body post-contents">
+<h5 class="no-anchor card-title listing-title">
 Online Campaign Performance
-</h3>
-<div class="listing-subtitle">
-Marketing Analysis
-</div>
-</a>
+</h5>
 <div class="listing-categories">
 <div class="listing-category" onclick="window.quartoListingCategory('business analytics'); return false;">
 business analytics
 </div>
 </div>
-<a href="./showcase/Marketing_Analysis_psaraki/Marketing_Analysis.html">
-<div class="listing-description">
+<div class="card-text listing-description">
 Data from the google merchandise store contains information about every browsing…
 </div>
-</a>
+<div class="card-attribution card-text-small justify">
+<div class="listing-author">
+Leonardo Cerliani
 </div>
-<div class="metadata">
-<a href="./showcase/Marketing_Analysis_psaraki/Marketing_Analysis.html">
 <div class="listing-date">
 Aug 14, 2023
 </div>
+</div>
+</div>
+</div>
+</a>
+</div>
+<div class="g-col-1" data-index="1" data-listing-date-sort="1690063200000" data-listing-file-modified-sort="1695017293960" data-listing-reading-time-sort="41.21">
+<a href="./showcase/Framingham_CHD_logistic_regression/Graded_Task_Logistic_Regression_V5.html" class="quarto-grid-link">
+<div class="quarto-grid-item card h-100 card-left">
+<p class="card-img-top">
+<img src="./showcase/Framingham_CHD_logistic_regression/app_logistic.jpg" class="thumbnail-image card-img" style="height: 150px;">
+</p>
+<div class="card-body post-contents">
+<h5 class="no-anchor card-title listing-title">
+Framingham CHD logistic regression
+</h5>
+<div class="card-text listing-description">
+The Framingham dataset (available also on kaggle) is an ongoing study which has been running since 1948. It…
+</div>
+<div class="card-attribution card-text-small justify">
 <div class="listing-author">
 Leonardo Cerliani
 </div>
+<div class="listing-date">
+Jul 23, 2023
+</div>
+</div>
+</div>
+</div>
 </a>
 </div>
-</div>
-<div class="quarto-post image-right" data-index="1" data-listing-date-sort="1688767200000" data-listing-file-modified-sort="1692375131831" data-listing-reading-time-sort="26.175">
-<div class="thumbnail">
-<p><a href="./showcase/Product_Analysis_psaraki/Product_Analysis.html"> <img src="./showcase/Product_Analysis_psaraki/TTP.jpg" class="thumnail-image"> </a></p>
-</div>
-<div class="body">
-<a href="./showcase/Product_Analysis_psaraki/Product_Analysis.html">
-<h3 class="no-anchor listing-title">
+<div class="g-col-1" data-index="2" data-listing-date-sort="1688767200000" data-listing-file-modified-sort="1692426816084" data-listing-reading-time-sort="26.175">
+<a href="./showcase/Product_Analysis_psaraki/Product_Analysis.html" class="quarto-grid-link">
+<div class="quarto-grid-item card h-100 card-left">
+<p class="card-img-top">
+<img src="./showcase/Product_Analysis_psaraki/TTP.jpg" class="thumbnail-image card-img" style="height: 150px;">
+</p>
+<div class="card-body post-contents">
+<h5 class="no-anchor card-title listing-title">
 Analysis of time-to-purchase (TTP)
-</h3>
-<div class="listing-subtitle">
-Product Analysis Graded Task
-</div>
-<div class="listing-description">
+</h5>
+<div class="card-text listing-description">
 We work in an e-commerce company and have data about many browser actions perfomed by the user…
 </div>
-</a>
+<div class="card-attribution card-text-small justify">
+<div class="listing-author">
+Leonardo Cerliani
 </div>
-<div class="metadata">
-<a href="./showcase/Product_Analysis_psaraki/Product_Analysis.html">
 <div class="listing-date">
 Jul 8, 2023
 </div>
-<div class="listing-author">
-Leonardo Cerliani
+</div>
+</div>
 </div>
 </a>
 </div>
-</div>
-<div class="quarto-post image-right" data-index="2" data-categories="shiny app,neuroimaging" data-listing-date-sort="1672182000000" data-listing-file-modified-sort="1673078228551" data-listing-reading-time-sort="15.18">
-<div class="thumbnail">
-<p><a href="./showcase/dimred_app/dimred_app.html"> <img src="./showcase/dimred_app/dimred.gif" class="thumnail-image"> </a></p>
-</div>
-<div class="body">
-<a href="./showcase/dimred_app/dimred_app.html">
-<h3 class="no-anchor listing-title">
+<div class="g-col-1" data-index="3" data-categories="shiny app,neuroimaging" data-listing-date-sort="1672182000000" data-listing-file-modified-sort="1673078228551" data-listing-reading-time-sort="15.18">
+<a href="./showcase/dimred_app/dimred_app.html" class="quarto-grid-link">
+<div class="quarto-grid-item card h-100 card-left">
+<p class="card-img-top">
+<img src="./showcase/dimred_app/dimred.gif" class="thumbnail-image card-img" style="height: 150px;">
+</p>
+<div class="card-body post-contents">
+<h5 class="no-anchor card-title listing-title">
 Interactive data exploration in neuroimaging: a simple example
-</h3>
-<div class="listing-subtitle">
-
-</div>
-</a>
+</h5>
 <div class="listing-categories">
 <div class="listing-category" onclick="window.quartoListingCategory('shiny app'); return false;">
 shiny app
@@ -246,24 +260,22 @@ shiny app
 neuroimaging
 </div>
 </div>
-<a href="./showcase/dimred_app/dimred_app.html">
-<div class="listing-description">
+<div class="card-text listing-description">
 <br>
 <br>
 
 </div>
-</a>
-</div>
-<div class="metadata">
-<a href="./showcase/dimred_app/dimred_app.html">
-<div class="listing-date">
-Dec 28, 2022
-</div>
+<div class="card-attribution card-text-small justify">
 <div class="listing-author">
 LC
 </div>
-</a>
+<div class="listing-date">
+Dec 28, 2022
 </div>
+</div>
+</div>
+</div>
+</a>
 </div>
 </div>
 <div class="listing-no-matching d-none">

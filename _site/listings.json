@@ -11,6 +11,7 @@
   {
     "listing": "/blog.html",
     "items": [
+      "/blog/AB_notes/AB_notes.html",
       "/blog/purrr_RManova/purrr_RManova.html",
       "/blog/post_001/post_001.html"
     ]
